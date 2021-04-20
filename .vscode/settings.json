@@ -1,4 +1,4 @@
 {
-    "python.pythonPath": "C:\\Users\\bacht\\anaconda3\\python.exe",
+    "python.pythonPath": "C:\\Users\\bacht\\anaconda3\\envs\\deepface\\python.exe",
     "jupyter.jupyterServerType": "local"
 }
