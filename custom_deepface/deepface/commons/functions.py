@@ -8,7 +8,7 @@ import math
 from PIL import Image
 import base64
 import bz2
-from custom_mtcnn import MTCNN
+# from custom_mtcnn import MTCNN
 from custom_deepface.deepface.commons import distance
 #--------------------------------------------------
 
