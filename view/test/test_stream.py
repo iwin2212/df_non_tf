@@ -1,13 +1,12 @@
-from numpy.lib.utils import source
 from custom_deepface.deepface.commons import functions, distance as dst
-from test.lite_predict import predict_tfmodel
+from view.test.lite_predict import predict_tfmodel
 import os
-from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import cv2
 import time
 import os
+from const import embedding_path
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
@@ -18,7 +17,7 @@ def test_analysis(distance_metric, source=0, time_threshold=5, frame_threshold=5
     threshold = 0.4
 
     # loading database
-    embeddings = np.load("embeddings.npy", allow_pickle=True)
+    embeddings = np.load(embedding_path, allow_pickle=True)
     df = pd.DataFrame(embeddings, columns=['employee', 'embedding'])
     df['distance_metric'] = distance_metric
     # -----------------------
@@ -285,8 +284,8 @@ def test_stream(distance_metric='cosine', source=0, time_threshold=5, frame_thre
     test_analysis(distance_metric, source=source, time_threshold=time_threshold, frame_threshold=frame_threshold)
 
 
-# test_stream(time_threshold=0.02, frame_threshold=1,
-#             source="rtsp://admin:ECSIAQ@192.168.1.47:554")
-test_stream(time_threshold=0.02, frame_threshold=1, source=0)
+test_stream(time_threshold=0.02, frame_threshold=1,
+            source="rtsp://admin:ECSIAQ@192.168.1.47:554")
+# test_stream(time_threshold=0.02, frame_threshold=1, source=0)
 
 # save_images(db_path=database_path, model_name="ArcFace", distance_metric='cosine')

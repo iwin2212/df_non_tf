@@ -49,8 +49,8 @@ https://templatemo.com/tm-540-lava-landing-page
                     <div class="col-12">
                         <nav class="main-nav">
                             <!-- ***** Logo Start ***** -->
-                            <a href="index.html" class="logo">
-                                Lava
+                            <a href="/" class="logo">
+                                Javis
                             </a>
                             <!-- ***** Logo End ***** -->
                             <!-- ***** Menu Start ***** -->
@@ -91,20 +91,26 @@ https://templatemo.com/tm-540-lava-landing-page
                             <h1>Upload your images</h1>
                             <p>Tải lên một hoặc nhiều ảnh của cùng một người.</p>
                             <form action="/uploader" method="POST" enctype="multipart/form-data">
-                                <input class="main-button-slider" type="file" name="file[]"  multiple="" />
-                                
+                                <input class="btn main-button-slider" type="file" name="file[]" multiple=""/>
+
                                 <table style="margin-top: 10px;" class="table table-borderless">
                                     <tr>
                                         <td>
                                             Tên:
                                         </td>
                                         <td>
-                                            <input name="name" placeholder="Ví dụ: nguyen_van_a" class = "form-control">
+                                            <input name="name" placeholder="Ví dụ: nguyen_van_a" class="form-control">
                                         </td>
                                     </tr>
                                 </table>
                                 <br>
-                                <input class="main-button-slider" type="submit" />
+                                {% if action == 'uploaded' %}
+                                <div class="alert alert-success alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                    Đã tải lên ảnh của "{{name}}"
+                                </div>
+                                {% endif%}
+                                <input class="btn btn-warning main-button-slider" type="submit" value="Gửi lên"/>
                             </form>
                         </div>
                     </div>
