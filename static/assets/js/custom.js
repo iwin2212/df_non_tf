@@ -84,6 +84,8 @@
 				menu = target;
 			var $target = $(target);
 
+			var link = this.href;
+			window.location.href = link;
 			$('html, body').stop().animate({
 				'scrollTop': $target.offset().top
 			}, 500, 'swing', function () {
