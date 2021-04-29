@@ -3,7 +3,7 @@ from importlib import import_module
 import os
 from flask import render_template, Response, jsonify
 from const import snap_path
-from utils import get_new_brand, check_file_exist
+from utils import get_new_brand, check_file_exist, get_list_unknown_img
 mod = Blueprint('take_shot', __name__)
 if os.environ.get('CAMERA'):
     Camera = import_module('camera_' + os.environ['CAMERA']).Camera
@@ -42,6 +42,7 @@ def snap_shot():
     return jsonify(result = check_file_exist(new_shot))
 
 
-@mod.route('/brandname',  methods=['POST'])
-def snap_shot():
-    return render_template()
+@mod.route('/brandname')
+def brandname():
+    list_unknown_img = get_list_unknown_img()
+    return render_template('./brandname.html', list_unknown_img=list_unknown_img)

@@ -16,3 +16,12 @@ def get_new_brand():
 
 def check_file_exist(file_path):
     return Path(file_path).is_file()
+
+
+def get_list_unknown_img():
+    list_path = []
+    for root, dirs, files in os.walk(snap_path, topdown=False):
+        for name in files:
+            path = "./" + os.path.join(root, name)
+            list_path.append(path)
+    return list_path

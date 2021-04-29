@@ -42,40 +42,9 @@ https://templatemo.com/tm-540-lava-landing-page
 
 
     <!-- ***** Header Area Start ***** -->
-    <header class="header-area header-sticky">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <nav class="main-nav">
-                        <!-- ***** Logo Start ***** -->
-                        <a href="/" class="logo">
-                            Javis
-                        </a>
-                        <!-- ***** Logo End ***** -->
-                        <!-- ***** Menu Start ***** -->
-                        <ul class="nav">
-                            <li class="scroll-to-section"><a href="/" class="menu-item">Trang chủ</a></li>
-                            </li>
-                            <li class="submenu">
-                                <a href="javascript:;">Face Recognition</a>
-                                <ul>
-                                    <li><a href="/uploader" class="menu-item">Tải ảnh lên</a></li>
-                                    <li><a href="/take_shots" class="menu-item">Chụp ảnh</a></li>
-                                    <li><a href="/live_demo" class="menu-item">Live demo</a></li>
-                                    <li><a href="/result" class="menu-item">Kết quả</a></li>
-                                </ul>
-                            </li>
-                            <li class="scroll-to-section"><a href="#contact-us" class="menu-item">Contact Us</a></li>
-                        </ul>
-                        <a class='menu-trigger'>
-                            <span>Menu</span>
-                        </a>
-                        <!-- ***** Menu End ***** -->
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </header>
+    {%block content%}
+    {%include 'header_footer/header.html' %}
+    {%endblock%}
     <!-- ***** Header Area End ***** -->
 
 
