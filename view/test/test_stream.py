@@ -1,5 +1,5 @@
 from custom_deepface.deepface.commons import functions, distance as dst
-from view.test.lite_predict import predict_tfmodel
+from lite_predict import predict_tfmodel
 import os
 import numpy as np
 import pandas as pd
@@ -14,7 +14,9 @@ def test_analysis(distance_metric, source=0, time_threshold=5, frame_threshold=5
     text_color = (255, 255, 255)
     # ------------------------
     input_shape = input_shape_x, input_shape_y = 160, 160
-    threshold = 0.4
+    model_name='Facenet'
+    # threshold = dst.findThreshold(model_name, distance_metric)
+    threshold = dst.findThreshold(model_name, distance_metric) - 3
 
     # loading database
     embeddings = np.load(embedding_path, allow_pickle=True)
@@ -36,20 +38,20 @@ def test_analysis(distance_metric, source=0, time_threshold=5, frame_threshold=5
     freezed_frame = 0
     tic = time.time()
     cap = cv2.VideoCapture(source)  # webcam
-
     list_label = {}
     while(True):
         try:
             t0 = time.time()
             ret, img = cap.read()
-            
+            resolution_x = img.shape[1]
+            resolution_y = img.shape[0]
+            while(img.shape[0]>600):
+                img = cv2.resize(img, (int(resolution_x/2),int(resolution_y/2)))
             fps = (1/(time.time() - t0))
             fpstext = "FPS: " + str(fps)[:2]
             if img is None:
                 break
             raw_img = img.copy()
-            resolution_x = img.shape[1]
-            resolution_y = img.shape[0]
             if freeze == False:
                 faces = face_cascade.detectMultiScale(img,  1.3, 5)
                 if len(faces) == 0:
@@ -136,10 +138,11 @@ def test_analysis(distance_metric, source=0, time_threshold=5, frame_threshold=5
                                     df['distance'] = df.apply(
                                         findDistance, axis=1)
                                     df = df.sort_values(by=["distance"])
+                                    print(df)
                                     list_candidate = []
                                     list_distance = []
 
-                                    for i in range(5):
+                                    for i in range(3):
                                         candidate = df.iloc[i]
                                         candidate_label = candidate['employee']
                                         best_distance = candidate['distance']
@@ -148,9 +151,12 @@ def test_analysis(distance_metric, source=0, time_threshold=5, frame_threshold=5
                                     candidate_label = 'unknown'
                                     best_distance = 0
                                     for i in list_candidate:
-                                        if (list_candidate.count(i) >= 3):
+                                        distance = list_distance[list_candidate.index(i)]
+                                        if (list_candidate.count(i) >= 2 and distance <threshold):
                                             candidate_label = i
-                                            best_distance = list_distance[list_candidate.index(i)]
+                                            best_distance = distance
+                                            break
+                                    print("\n-------------> {} - {}\n".format(candidate_label, threshold))
 
                                     # if True:
                                     if best_distance <= threshold:
@@ -216,9 +222,9 @@ def test_analysis(distance_metric, source=0, time_threshold=5, frame_threshold=5
                                             list_label[label] = 1
                                         else:
                                             num = list_label[label] + 1
-                                            if (num == 3):
+                                            if (num == 100):
                                                 cv2.imwrite("result.png", freeze_img)
-                                                # return label
+                                                return list_label
                                             list_label[label] = num
                                         print(list_label)
                             tic = time.time()  # in this way, freezed image can show 5 seconds
@@ -227,7 +233,7 @@ def test_analysis(distance_metric, source=0, time_threshold=5, frame_threshold=5
                     cv2.putText(freeze_img, fpstext, (40, 40),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
                     cv2.imshow('img', freeze_img)
-                    freezed_frame = freezed_frame + fps
+                    freezed_frame = freezed_frame + int(fps)
                 else:
                     face_detected = False
                     face_included_frames = 0
@@ -284,8 +290,8 @@ def test_stream(distance_metric='cosine', source=0, time_threshold=5, frame_thre
     test_analysis(distance_metric, source=source, time_threshold=time_threshold, frame_threshold=frame_threshold)
 
 
-test_stream(time_threshold=0.02, frame_threshold=1,
+test_stream(distance_metric='euclidean', time_threshold=0.02, frame_threshold=1,
             source="rtsp://admin:ECSIAQ@192.168.1.47:554")
-# test_stream(time_threshold=0.02, frame_threshold=1, source=0)
+# test_stream(distance_metric='euclidean', time_threshold=0.02, frame_threshold=1, source=0)
 
 # save_images(db_path=database_path, model_name="ArcFace", distance_metric='cosine')
