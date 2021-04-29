@@ -3,7 +3,7 @@ from importlib import import_module
 import os
 from flask import render_template, Response, jsonify
 from const import snap_path
-from utils import get_new_brand
+from utils import get_new_brand, check_file_exist
 mod = Blueprint('take_shot', __name__)
 if os.environ.get('CAMERA'):
     Camera = import_module('camera_' + os.environ['CAMERA']).Camera
@@ -37,5 +37,11 @@ def snap_shot():
     img = Camera().get_frame()
     image = np.asarray(bytearray(img), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
-    cv2.imwrite(get_new_brand(), image)
-    return jsonify()
+    new_shot = get_new_brand()
+    cv2.imwrite(new_shot, image)
+    return jsonify(result = check_file_exist(new_shot))
+
+
+@mod.route('/brandname',  methods=['POST'])
+def snap_shot():
+    return render_template()
