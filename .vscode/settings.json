@@ -1,4 +1,4 @@
 {
-    "python.pythonPath": "/home/iwin/anaconda3/envs/demo_df/bin/python",
+    "python.pythonPath": "/home/iwin/anaconda3/envs/demo/bin/python",
     "jupyter.jupyterServerType": "local"
 }
