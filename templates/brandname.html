@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
+    <head>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="TemplateMo">
-    <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="TemplateMo">
+        <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
 
-    <title>Lava Landing Page HTML Template</title>
-<!--
+        <title>Lava Landing Page HTML Template</title>
+        <!--
 
 Lava Landing Page
 
@@ -18,121 +18,120 @@ https://templatemo.com/tm-540-lava-landing-page
 
 -->
 
-    <!-- Additional CSS Files -->
-    <link rel="stylesheet" type="text/css" href="./static/assets/css/bootstrap.min.css">
+        <!-- Additional CSS Files -->
+        <link rel="stylesheet" type="text/css" href="./static/assets/css/bootstrap.min.css">
 
-    <link rel="stylesheet" type="text/css" href="./static/assets/css/font-awesome.css">
+        <link rel="stylesheet" type="text/css" href="./static/assets/css/font-awesome.css">
 
-    <link rel="stylesheet" href="./static/assets/css/templatemo-lava.css">
+        <link rel="stylesheet" href="./static/assets/css/templatemo-lava.css">
 
-    <link rel="stylesheet" href="./static/assets/css/owl-carousel.css">
+        <link rel="stylesheet" href="./static/assets/css/owl-carousel.css">
 
-</head>
+    </head>
 
-<body>
+    <body>
 
-    <!-- ***** Preloader Start ***** -->
-    <div id="preloader">
-        <div class="jumper">
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
-    </div>
-    <!-- ***** Preloader End ***** -->
-
-
-    <!-- ***** Header Area Start ***** -->
-    {%block content%}
-    {%include 'header_footer/header.html' %}
-    {%endblock%}
-    <!-- ***** Header Area End ***** -->
-
-    <div class="right-image-decor"></div>
-
-    <!-- ***** Testimonials Starts ***** -->
-    <section class="section" id="testimonials">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8 offset-lg-2">
-                    <div class="center-heading">
-                        <h2>What They Think <em>About Us</em></h2>
-                        <p>Suspendisse vitae laoreet mauris. Fusce a nisi dapibus, euismod purus non, convallis odio.
-                            Donec vitae magna ornare, pellentesque ex vitae, aliquet urna.</p>
-                    </div>
-                </div>
-                {% if list_unknown_img|length == 0 %}
-                <div class="col-lg-10 col-md-12 col-sm-12 mobile-bottom-fix-big"
-                    data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
-                    <div id="saving_action" class="alert alert-success alert-dismissible" role="alert" >
-                        <p class="form-control">Tất cả các ảnh đều đã được đánh nhãn.</p>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                </div>
-
-                {% elif list_unknown_img|length == 1 %}
-                <div class="col-lg-10 col-md-12 col-sm-12 mobile-bottom-fix-big"
-                    data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
-                    <div class="owl-theme">
-                        <div class="item service-item">
-                            <div class="author">
-                                <i><img src="./static/assets/images/testimonial-author-1.png" alt="Author One"></i>
-                            </div>
-                            <div class="testimonial-content">
-                                <h4>Jonathan Smart</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                {% else %}
-                <div class="col-lg-10 col-md-12 col-sm-12 mobile-bottom-fix-big"
-                    data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
-                    <div class="owl-carousel owl-theme">
-                        <div class="item service-item">
-                            <div class="author">
-                                <i><img src="./static/assets/images/testimonial-author-1.png" alt="Author One"></i>
-                            </div>
-                            <div class="testimonial-content">
-                                <ul class="stars">
-                                    <li><i class="fa fa-star"></i></li>
-                                    <li><i class="fa fa-star"></i></li>
-                                    <li><i class="fa fa-star"></i></li>
-                                    <li><i class="fa fa-star"></i></li>
-                                    <li><i class="fa fa-star"></i></li>
-                                </ul>
-                                <h4>Jonathan Smart</h4>
-                                <p>“Nullam hendrerit, elit a semper pharetra, ipsum nibh tristique tortor, in tempus
-                                    urna elit in mauris.”</p>
-                                <span>Besta CTO</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
+        <!-- ***** Preloader Start ***** -->
+        <div id="preloader">
+            <div class="jumper">
+                <div></div>
+                <div></div>
+                <div></div>
             </div>
         </div>
-    </section>
-    <!-- ***** Testimonials Ends ***** -->
+        <!-- ***** Preloader End ***** -->
 
-    <!-- jQuery -->
-    <script src="./static/assets/js/jquery-2.1.0.min.js"></script>
 
-    <!-- Bootstrap -->
-    <script src="./static/assets/js/popper.js"></script>
-    <script src="./static/assets/js/bootstrap.min.js"></script>
+        <!-- ***** Header Area Start ***** -->
+        {%block content%}
+        {%include 'header_footer/header.html' %}
+        {%endblock%}
+        <!-- ***** Header Area End ***** -->
 
-    <!-- Plugins -->
-    <script src="./static/assets/js/owl-carousel.js"></script>
-    <script src="./static/assets/js/scrollreveal.min.js"></script>
-    <script src="./static/assets/js/waypoints.min.js"></script>
-    <script src="./static/assets/js/jquery.counterup.min.js"></script>
-    <script src="./static/assets/js/imgfix.min.js"></script>
+        <div class="right-image-decor"></div>
 
-    <!-- Global Init -->
-    <script src="./static/assets/js/custom.js"></script>
+        <!-- ***** Testimonials Starts ***** -->
+        <section class="section" id="testimonials">
+            <form id="structure" method='POST' class="container">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 offset-lg-2">
+                            <div class="center-heading">
+                                <h2>Thao tác: <em>Đánh nhãn ảnh</em></h2>
+                                <p>Bạn cần đánh đúng các nhãn với từng ảnh để đảm bảo máy sẽ học đúng. Trong trường hợp ảnh không có mặt người hoặc hình ảnh không rõ nét vui lòng bỏ qua.</p>
+                            </div>
+                        </div>
+                        {% if list_unknown_img|length == 0 %}
+                        <div class="col-lg-10 col-md-12 col-sm-12 mobile-bottom-fix-big" data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
+                            <div id="saving_action" class="alert alert-success alert-dismissible" role="alert">
+                                <p class="form-control">Tất cả các ảnh đều đã được đánh nhãn.</p>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        </div>
 
-</body>
+                        {% elif list_unknown_img|length == 1 %}
+                        <div class="col-lg-10 col-md-12 col-sm-12 mobile-bottom-fix-big" data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
+                            <div class="owl-theme">
+                                {% for img in list_unknown_img %}
+                                <div class="item service-item">
+                                    <div class="testimonial-content">
+                                        <i><img src="{{img}}" id="{{img}}" alt="Author One" class="container"></i>
+                                        <input type='text' name='user' value="" placeholder="Ảnh cần chưa có tên" class="form-control" required>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="left-text col-lg-6 col-md-12 col-sm-12 col-xs-12" data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
+                            <input class="btn btn-warning" type="button" onclick="save()" value="Lưu lại"/>
+                        </div>
+
+                        {% else %}
+                        <div class="col-lg-10 col-md-12 col-sm-12 mobile-bottom-fix-big" data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
+                            <div class="owl-carousel owl-theme">
+                                {% for img in list_unknown_img %}
+                                <div class="item service-item">
+                                    <div class="author">
+                                        <i><img src="./static/assets/images/tick.png" style="display: none;"></i>
+                                    </div>
+                                    <div class="testimonial-content">
+                                        <i><img src="{{img}}" alt="Author One" class="container"></i>
+                                        <input type='text' name='{{img}}' onkeyup="get_brand(this)" placeholder="Ảnh cần chưa có tên" class="form-control" required>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="left-text col-lg-6 col-md-12 col-sm-12 col-xs-12" data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
+                            <input class="btn btn-warning" type="button" onclick="save()" value="Lưu lại"/>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </section>
+        <!-- ***** Testimonials Ends ***** -->
+
+        <!-- jQuery -->
+        <script src="./static/assets/js/jquery-2.1.0.min.js"></script>
+
+        <!-- Bootstrap -->
+        <script src="./static/assets/js/popper.js"></script>
+        <script src="./static/assets/js/bootstrap.min.js"></script>
+
+        <!-- Plugins -->
+        <script src="./static/assets/js/owl-carousel.js"></script>
+        <script src="./static/assets/js/scrollreveal.min.js"></script>
+        <script src="./static/assets/js/waypoints.min.js"></script>
+        <script src="./static/assets/js/jquery.counterup.min.js"></script>
+        <script src="./static/assets/js/imgfix.min.js"></script>
+
+        <!-- Global Init -->
+        <script src="./static/assets/js/custom.js"></script>
+
+        <script src="./static/assets/js/brand.js"></script>
+    </body>
+
 </html>

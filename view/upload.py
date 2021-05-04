@@ -3,13 +3,9 @@ import os
 from flask import request, render_template, Blueprint
 from view.data import add_img2db
 
-from const import embedding_path
+from const import embedding_path, UPLOAD_FOLDER, ALLOWED_EXTENSIONS
 import numpy as np
 import pandas as pd
-
-UPLOAD_FOLDER = os.path.join(os.path.dirname(
-    os.path.realpath(__file__)).split('/view')[0], "upload")
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 mod = Blueprint('upload', __name__)
 

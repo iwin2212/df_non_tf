@@ -1,7 +1,11 @@
 from pathlib import Path
-from const import snap_path
+from const import snap_path, UPLOAD_FOLDER
 import os
+from view.data import add_img2db
 
+import numpy as np
+from const import embedding_path
+import pandas as pd
 
 def get_new_brand():
     name = 'snap'
@@ -25,3 +29,23 @@ def get_list_unknown_img():
             path = "./" + os.path.join(root, name)
             list_path.append(path)
     return list_path
+
+
+def get_current_folder():
+    return os.path.dirname(os.path.realpath(__file__))
+
+
+def rename(f):
+    for key in f.keys():
+        name = f[key]
+        if (name != ''):
+            try:
+                add_img2db(key, name)
+            except Exception as error:
+                print("Error: {}".format(error))
+                continue
+            os.remove(key)
+
+    embeddings = np.load(embedding_path, allow_pickle=True)
+    df = pd.DataFrame(embeddings, columns=['employee', 'embedding'])
+    print("-----------------------------\n{}\n---------------------------".format(df))

@@ -409,7 +409,6 @@ def preprocess_face(img, target_size=(224, 224), grayscale = False, enforce_dete
 	base_img = img.copy()
 	
 	img, region = detect_face(img = img, detector_backend = detector_backend, grayscale = grayscale, enforce_detection = enforce_detection)
-	
 	#--------------------------
 	
 	if img.shape[0] > 0 and img.shape[1] > 0:
@@ -420,7 +419,7 @@ def preprocess_face(img, target_size=(224, 224), grayscale = False, enforce_dete
 			raise ValueError("Detected face shape is ", img.shape,". Consider to set enforce_detection argument to False.")
 		else: #restore base image 
 			img = base_img.copy()
-		
+	cut_img = img.copy()
 	#--------------------------
 	
 	#post-processing
@@ -433,7 +432,7 @@ def preprocess_face(img, target_size=(224, 224), grayscale = False, enforce_dete
 	img_pixels /= 255 #normalize input in [0, 1]
 	
 	if return_region == True:
-		return img_pixels, region
+		return cut_img, img_pixels, region
 	else:
 		return img_pixels
 
