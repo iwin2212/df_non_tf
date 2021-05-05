@@ -16,26 +16,6 @@ function get_brand(en) {
     }
 }
 
-
-function rename() {
-    rename_list = {}
-    list_unknown_img.forEach(function (i) {
-        new_name = document.getElementById(i).value.trim();
-        if (new_name != ''){
-            if (new_name == "Ảnh này sẽ được xoá sau khi ấn lưu lại"){
-                rename_list[i] = "delete";
-            }
-            else{
-                rename_list[i] = new_name;
-            }
-        }
-    });
-    $.post('./readdress?rename_list=' + JSON.stringify(rename_list), function (data, status) {
-        console.log(data);
-    });
-    window.location.href = "./brandname";
-}
-
 function delete_img(id) {
     document.getElementById(id).value = "Ảnh này sẽ được xoá sau khi ấn lưu lại";
     v_img = document.getElementById(id).parentElement.parentElement.children[0].children[0].children[0];
@@ -48,4 +28,35 @@ function delete_img(id) {
         $(v_img).hide();
         $(x_img).show();
     }
+}
+
+function rename() {
+    show_loading();
+    rename_list = {};
+    list_unknown_img.forEach(function (i) {
+        new_name = document.getElementById(i).value.trim();
+        if (new_name != '') {
+            if (new_name == "Ảnh này sẽ được xoá sau khi ấn lưu lại") {
+                rename_list[i] = "delete";
+            }
+            else {
+                rename_list[i] = new_name;
+            }
+        }
+    });
+    $.post('./readdress?rename_list=' + JSON.stringify(rename_list), function (data, status) {
+        console.log(data);
+        hide_loading();
+    });
+    window.location.href = "./brandname";
+}
+
+function show_loading(){
+    $("#loading").show();
+    $("#rename").hide();
+}
+
+function hide_loading(){
+    $("#loading").hide();
+    $("#rename").show();
 }
