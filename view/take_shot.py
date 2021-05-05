@@ -5,6 +5,7 @@ from flask import render_template, Response, jsonify
 from const import snap_path
 from utils import get_new_brand, check_file_exist, get_list_unknown_img, rename
 from view.data import detect_face
+from ast import literal_eval
 mod = Blueprint('take_shot', __name__)
 if os.environ.get('CAMERA'):
     Camera = import_module('camera_' + os.environ['CAMERA']).Camera
@@ -41,16 +42,19 @@ def snap_shot():
     # print(image.shape)
     new_shot = get_new_brand()
     cv2.imwrite(new_shot, image)
-    return jsonify(result = check_file_exist(new_shot))
+    return jsonify(result=check_file_exist(new_shot))
 
 
-@mod.route('/brandname',  methods=['GET', 'POST'])
+@mod.route('/brandname')
 def brandname():
-    if request.method == 'POST':
-        rename(request.form)
-        # return render_template("/index.html")
-        list_unknown_img = get_list_unknown_img()
-        return render_template('./brandname.html', list_unknown_img=list_unknown_img)
-    else:
-        list_unknown_img = get_list_unknown_img()
-        return render_template('./brandname.html', list_unknown_img=list_unknown_img)
+    list_unknown_img = get_list_unknown_img()
+    return render_template('./brandname.html', list_unknown_img=list_unknown_img)
+
+
+@mod.route("/readdress",  methods=['POST'])
+def readdress():
+    rename_list = request.args.get("rename_list")
+    data = literal_eval(rename_list)
+    for key, value in data.items():
+        rename(key, value)
+    return jsonify()

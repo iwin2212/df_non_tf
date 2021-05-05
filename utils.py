@@ -1,11 +1,10 @@
 from pathlib import Path
+
+from numpy import delete
 from const import snap_path, UPLOAD_FOLDER
 import os
 from view.data import add_img2db
 
-import numpy as np
-from const import embedding_path
-import pandas as pd
 
 def get_new_brand():
     name = 'snap'
@@ -35,17 +34,14 @@ def get_current_folder():
     return os.path.dirname(os.path.realpath(__file__))
 
 
-def rename(f):
-    for key in f.keys():
-        name = f[key]
-        if (name != ''):
-            try:
-                add_img2db(key, name)
-            except Exception as error:
-                print("Error: {}".format(error))
-                continue
-            os.remove(key)
-
-    embeddings = np.load(embedding_path, allow_pickle=True)
-    df = pd.DataFrame(embeddings, columns=['employee', 'embedding'])
-    print("-----------------------------\n{}\n---------------------------".format(df))
+def rename(key, val):
+    if (val == 'delete'):
+        os.remove(key)
+    else:
+        try:
+            add_img2db(key, val)
+            # print("{} added to database".format(val))
+        except Exception as error:
+            print("Error: {}".format(error))
+        os.remove(key)
+        # print("removed {}".format(key))

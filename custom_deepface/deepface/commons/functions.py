@@ -414,7 +414,6 @@ def preprocess_face(img, target_size=(224, 224), grayscale = False, enforce_dete
 	if img.shape[0] > 0 and img.shape[1] > 0:
 		img = align_face(img = img, detector_backend = detector_backend)
 	else:
-		
 		if enforce_detection == True:
 			raise ValueError("Detected face shape is ", img.shape,". Consider to set enforce_detection argument to False.")
 		else: #restore base image 
