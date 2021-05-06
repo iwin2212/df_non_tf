@@ -3,7 +3,7 @@ from pathlib import Path
 from numpy import delete
 from const import snap_path, UPLOAD_FOLDER
 import os
-from view.data import add_img2db
+from view.utils.data import add_img2db
 
 
 def get_new_brand():

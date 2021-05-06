@@ -10,3 +10,6 @@ UPLOAD_FOLDER = os.path.join(os.path.dirname(
     os.path.realpath(__file__)).split('/view')[0], "upload")
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 input_shape_x, input_shape_y = 160, 160
+
+text_color = (255, 255, 255)
+distance_metric = 'cosine'

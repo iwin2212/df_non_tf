@@ -1,11 +1,12 @@
 from flask import Flask, render_template
-from view import upload, take_shot
+from view import upload, take_shot, live_demo
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'face_regconition'
 
 app.register_blueprint(upload.mod)
 app.register_blueprint(take_shot.mod)
+app.register_blueprint(live_demo.mod)
 
 
 @app.route('/')

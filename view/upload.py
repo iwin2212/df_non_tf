@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from flask import request, render_template, Blueprint
-from view.data import add_img2db
+from view.utils.data import add_img2db
 
 from const import embedding_path, UPLOAD_FOLDER, ALLOWED_EXTENSIONS
 import numpy as np

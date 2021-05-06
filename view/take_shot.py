@@ -4,13 +4,15 @@ import os
 from flask import render_template, Response, jsonify
 from const import snap_path
 from utils import get_new_brand, check_file_exist, get_list_unknown_img, rename
-from view.data import detect_face
+from view.utils.data import detect_face
 from ast import literal_eval
-mod = Blueprint('take_shot', __name__)
 if os.environ.get('CAMERA'):
     Camera = import_module('camera_' + os.environ['CAMERA']).Camera
 else:
     from view.camera_flask.camera_opencv import Camera
+import cv2
+import numpy as np
+mod = Blueprint('take_shot', __name__)
 
 
 @mod.route("/take_shots")
@@ -34,8 +36,6 @@ def video_feed():
 
 @mod.route('/snap_shot',  methods=['POST'])
 def snap_shot():
-    import cv2
-    import numpy as np
     img = Camera().get_frame()
     image = np.asarray(bytearray(img), dtype="uint8")
     image = detect_face(cv2.imdecode(image, cv2.IMREAD_COLOR))
