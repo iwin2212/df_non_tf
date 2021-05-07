@@ -22,13 +22,18 @@ def represent(img_path, enforce_detection=True, detector_backend='opencv', grays
 	#post-processing
     if grayscale == True:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-		
+
+	img_pixels = get_face_pixels(img)
+    embedding = predict_tfmodel(img_pixels)[0].tolist()
+    return embedding
+
+
+def get_face_pixels(img):
     img = cv2.resize(img, (input_shape_x, input_shape_y))
     img_pixels = np.array(img, dtype=np.float32)
     img_pixels = np.expand_dims(img_pixels, axis = 0)
     img_pixels /= 255 #normalize input in [0, 1]
-    embedding = predict_tfmodel(img_pixels)[0].tolist()
-    return embedding
+    return img_pixels
 
 
 def add_img2db(img_path, label: str):
