@@ -9,23 +9,20 @@ import numpy as np
 import cv2
 from view.utils.stream import preprocess
 mod = Blueprint('live_demo', __name__)
+prev = 0
 
-
-def generate(camera):
-	face_cascade, threshold = preprocess()
+def gen(camera):
 	while True:
 		frame = np.asarray(bytearray(camera.get_frame()), dtype="uint8")
 		img = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-		faces = face_cascade.detectMultiScale(img,  1.3, 5)
-		if len(faces) == 0:
-			face_included_frames = 0
+		image = preprocess(img=img, frame_rate=3, prev=prev)
 		yield (b'--frame\r\n'
-				b'Content-Type: image/jpeg\r\n\r\n' + img + b'\r\n')
+				b'Content-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpg', image)[1].tobytes() + b'\r\n')
 
 
-@mod.route('/video_feed')
-def video_feed():
-    return Response(generate(Camera()),
+@mod.route('/live_stream')
+def live_stream():
+    return Response(gen(Camera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 

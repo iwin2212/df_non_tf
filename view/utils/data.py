@@ -12,18 +12,18 @@ def detect_face(img_path, enforce_detection=True, detector_backend='opencv'):
     return cut_img
 
 
-def represent(img_path, enforce_detection=True, detector_backend='opencv', grayscale = False):
+def represent(img_path, enforce_detection=True, detector_backend='opencv', grayscale=False):
     img = functions.load_image(img_path)
     #detect and align
     # img = functions.preprocess_face(img=img_path, target_size=(
     #     input_shape_y, input_shape_x), enforce_detection=enforce_detection, detector_backend=detector_backend)
-	#post-processing
+    # post-processing
 
-	#post-processing
+    # post-processing
     if grayscale == True:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-	img_pixels = get_face_pixels(img)
+        img_pixels = get_face_pixels(img)
     embedding = predict_tfmodel(img_pixels)[0].tolist()
     return embedding
 
@@ -31,8 +31,8 @@ def represent(img_path, enforce_detection=True, detector_backend='opencv', grays
 def get_face_pixels(img):
     img = cv2.resize(img, (input_shape_x, input_shape_y))
     img_pixels = np.array(img, dtype=np.float32)
-    img_pixels = np.expand_dims(img_pixels, axis = 0)
-    img_pixels /= 255 #normalize input in [0, 1]
+    img_pixels = np.expand_dims(img_pixels, axis=0)
+    img_pixels /= 255  # normalize input in [0, 1]
     return img_pixels
 
 
