@@ -69,8 +69,5 @@ def preprocess(img, frame_rate, prev):
                         # show name
                         cv2.putText(
                             img, candidate_label, (x+int(w/2), y+h + 13), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
-    # from utils import get_new_brand
-    # new_shot = get_new_brand()
-    # cv2.imwrite(new_shot, img)
     return img
 
