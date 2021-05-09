@@ -15,3 +15,6 @@ input_shape = input_shape_x, input_shape_y = 160, 160
 text_color = (255, 255, 255)
 distance_metric = 'cosine'
 model_name = 'Facenet'
+
+ROOT_DIR = '/usr/share/hassio/homeassistant/'
+

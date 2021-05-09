@@ -9,6 +9,7 @@ app.register_blueprint(take_shot.mod)
 app.register_blueprint(live_demo.mod)
 
 
+
 @app.route('/')
 def index():
     return render_template("/index.html")
