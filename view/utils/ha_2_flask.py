@@ -62,4 +62,3 @@ def create_rest_api(filename="rest_command.yaml"):
 
     if check_file_exist(command_file_path):
         print("File {} is ready to use.".format(filename))
-
