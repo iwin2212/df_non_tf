@@ -16,5 +16,13 @@ text_color = (255, 255, 255)
 distance_metric = 'cosine'
 model_name = 'Facenet'
 
-ROOT_DIR = '/usr/share/hassio/homeassistant/'
+token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIxZGQwYjNlNWE2ZTc0ZTY5YTM5NzdlZDAxMWE2Mjk5OCIsImlhdCI6MTU5NTE4MDYyOCwiZXhwIjoxOTEwNTQwNjI4fQ.9IytiXHV98pS4x5nxhH7z1QAq91ZXzBQaeJsZ8U2ZAQ"
 
+ROOT_DIR = "/usr/share/hassio/homeassistant/"
+
+ip_addr  = "127.0.0.1:8123"
+
+states_api = "http://"+ ip_addr +"/api/states/{}"
+config_api = "http://"+ ip_addr +"/api/config/core/check_config"
+restart_api = "http://"+ ip_addr +"/api/services/homeassistant/restart"
+snapshot_api = "http://"+ ip_addr +"/snapshot"

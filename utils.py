@@ -1,9 +1,9 @@
 from pathlib import Path
-
-from numpy import delete
-from const import snap_path, UPLOAD_FOLDER
+import io
+from const import snap_path, ROOT_DIR
 import os
 from view.utils.data import add_img2db
+import yaml
 
 
 def get_new_brand():
@@ -45,3 +45,22 @@ def rename(key, val):
             print("Error: {}".format(error))
         os.remove(key)
         # print("removed {}".format(key))
+
+
+def yaml2dict(filename):
+    f = open(filename, 'r', encoding='utf8')
+    res = yaml.load(f, Loader=yaml.FullLoader)
+    f.close()
+    return res
+
+
+def dict2yaml(dict_, filename):
+    with io.open(filename, 'w', encoding='utf-8') as outfile:
+        yaml.dump(dict_, outfile, default_flow_style=False, allow_unicode=True)
+
+
+def get_token():
+    secret_file = os.path.join(ROOT_DIR, 'secrets.yaml')
+    data = yaml2dict(secret_file)
+    authen_code = data['token']
+    return authen_code

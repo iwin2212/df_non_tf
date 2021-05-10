@@ -1,17 +1,35 @@
 import requests
 import json
+from const import states_api
+from utils import get_token
 
-def turn_on_switch(entity):
 
-	url = "http://192.168.0.110:8123/api/states/" + entity
+def post_entity_state(entity, state):
+    headers = {
+        "Authorization": "Bearer " + get_token(),
+        "content-type": "application/json"
+    }
 
-	payload = json.dumps({
-	"state": "on"
-	})
-	headers = {
-	'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiI3MjMxMzczOGY5NWI0NTFjODRjNjU2M2ViMmVjZjczMyIsImlhdCI6MTYyMDU3MzAzNywiZXhwIjoxNjIwNTc0ODM3fQ.pJUIhhcLS3e1KwC-GrHk98E1Y1Uawc18aedwu-bCRgM',
-	'Content-Type': 'application/json'
-	}
+    payload = json.dumps({
+        "state": state
+    })
 
-	response = requests.request("POST", url, headers=headers, data=payload)
-	return response.text
+    response = requests.request("POST", states_api.format(
+        entity), headers=headers, data=payload)
+    return response.text
+
+
+def get_entity_state(entity):
+    headers = {
+        "Authorization": "Bearer " + get_token()
+    }
+
+    payload = ""
+
+    response = requests.request("GET", states_api.format(
+        entity), headers=headers, data=payload)
+    return response.text
+
+
+
+
