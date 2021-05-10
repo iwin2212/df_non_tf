@@ -32,21 +32,28 @@ function delete_img(en) {
 function rename() {
   show_loading();
   rename_list = {};
-  list_unknown_img.forEach(function (i) {
-    new_name = document.getElementById(i).value.trim();
-    if (new_name != '') {
-      if (new_name == "Ảnh này sẽ được xoá sau khi ấn lưu lại") {
-        rename_list[i] = "delete";
+  if (list_unknown_img.length == 1){
+    new_name = document.getElementById("img_name").value.trim();
+    rename_list[list_unknown_img[0]] = new_name;
+  }
+  else {
+    list_unknown_img.forEach(function (i) {
+      new_name = document.getElementById(i).children[1].children[1].value.trim();
+      if (new_name != '') {
+        if (new_name == "Ảnh này sẽ được xoá sau khi ấn lưu lại") {
+          rename_list[i] = "delete";
+        }
+        else {
+          rename_list[i] = new_name;
+        }
       }
-      else {
-        rename_list[i] = new_name;
-      }
-    }
-  });
+    });
+  }
+
   console.log(rename_list);
-  // $.post('./readdress?rename_list=' + JSON.stringify(rename_list), function (data, status) {
-  //     hide_loading();
-  // });
+  $.post('./readdress?rename_list=' + JSON.stringify(rename_list), function (data, status) {
+      hide_loading();
+  });
   window.location.href = "./brandname";
 }
 

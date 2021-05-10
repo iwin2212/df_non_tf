@@ -26,7 +26,8 @@ https://templatemo.com/tm-540-lava-landing-page
         <link rel="stylesheet" href="./static/assets/css/templatemo-lava.css">
 
         <link rel="stylesheet" href="./static/assets/css/owl-carousel.css">
-
+        
+        <link rel="stylesheet" href="./static/assets/css/one_image.css">
     </head>
 
     <body>
@@ -74,26 +75,27 @@ https://templatemo.com/tm-540-lava-landing-page
                     {% elif list_unknown_img|length == 1 %}
                     <div class="col-lg-10 col-md-12 col-sm-12 mobile-bottom-fix-big" data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
                         <div class="owl-theme">
-                            {% for img in list_unknown_img %}
-                            <div class="item service-item">
-                                <div class="testimonial-content">
-                                    <i><img src="{{img}}" alt="Author One" class="container"></i>
-                                    <input type='text' name='user' value="" placeholder="Ảnh cần chưa có tên" class="form-control" required>
-                                </div>
-                            </div>
-                            {% endfor %}
+                          {% for img in list_unknown_img %}
+                          <div class="item service-item one-img container" width="300px">
+                              <div class="author">
+                                  <i><img src="./static/assets/images/tick.png" style="display: none;"></i>
+                                  <i><img src="./static/assets/images/close.png" style="display: none;"></i>
+                              </div>
+                              <div class="testimonial-content">
+                                  <i><img src="{{img}}" alt="Author One" class="container"></i>
+                                  <input type='text' id="img_name" onkeyup="get_brand(this)" placeholder="Ảnh chưa có tên" class="form-control" style="margin-top: 5%;">
+                                  <input class="btn btn-warning container" type="button" onclick="delete_img(this)" value="Xoá ảnh này" style="margin-top: 5%;" />
+                              </div>
+                          </div>
+                          {% endfor %}
                         </div>
-                    </div>
-                    <div class="left-text col-lg-6 col-md-12 col-sm-12 col-xs-12" data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
-                        <input class="btn btn-warning" id="rename" type="button" onclick="rename()" value="Lưu lại" />
-                        <input class="btn btn-warning container" type="button" onclick="delete_img(this)" value="Xoá ảnh này" style="margin-top: 5%;" />
                     </div>
 
                     {% else %}
                     <div class="col-lg-10 col-md-12 col-sm-12 mobile-bottom-fix-big" data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
                         <div class="owl-carousel owl-theme">
                             {% for img in list_unknown_img %}
-                            <div class="item service-item">
+                            <div class="item service-item" id="{{img}}">
                                 <div class="author">
                                     <i><img src="./static/assets/images/tick.png" style="display: none;"></i>
                                     <i><img src="./static/assets/images/close.png" style="display: none;"></i>
