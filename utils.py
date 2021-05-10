@@ -4,10 +4,10 @@ from const import snap_path, ROOT_DIR
 import os
 from view.utils.data import add_img2db
 import yaml
-
+import time
 
 def get_new_brand():
-    name = 'snap'
+    name = str(int(time.time()))
     index = 0
     while(True):
         new_brand = os.path.join(snap_path, name+str(index) + '.jpg')
@@ -41,10 +41,10 @@ def rename(key, val):
         try:
             add_img2db(key, val)
             # print("{} added to database".format(val))
+            os.remove(key)
+            # print("removed {}".format(key))
         except Exception as error:
-            print("Error: {}".format(error))
-        os.remove(key)
-        # print("removed {}".format(key))
+            print("Error in rename: {}".format(error))
 
 
 def yaml2dict(filename):

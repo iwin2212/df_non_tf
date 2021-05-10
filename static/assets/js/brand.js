@@ -1,6 +1,4 @@
 function get_brand(en) {
-    // console.log(name_en.slice(name_en.lastIndexOf('/')+1, -4))
-    // console.log(en.parentElement.parentElement.parentElement.parentNode)
     try {
         v_img = en.parentElement.parentElement.children[0].children[0].children[0];
         x_img = en.parentElement.parentElement.children[0].children[1].children[0];
@@ -44,10 +42,10 @@ function rename() {
             }
         }
     });
-    $.post('./readdress?rename_list=' + JSON.stringify(rename_list), function (data, status) {
-        console.log(data);
-        hide_loading();
-    });
+    console.log(rename_list)
+    // $.post('./readdress?rename_list=' + JSON.stringify(rename_list), function (data, status) {
+    //     hide_loading();
+    // });
     window.location.href = "./brandname";
 }
 

@@ -71,3 +71,15 @@ def preprocess(img, frame_rate, prev):
                             img, candidate_label, (x+int(w/2), y+h + 13), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
     return img
 
+
+def draw_retangle(img):
+    opencv_path = functions.get_opencv_path()
+    face_detector_path = opencv_path+"haarcascade_frontalface_default.xml"
+    face_cascade = cv2.CascadeClassifier(face_detector_path)
+    faces = face_cascade.detectMultiScale(img,  1.3, 5)
+
+    for (x, y, w, h) in faces:
+        if w > 130:  # discard small detected faces
+            # draw rectangle to main image
+            cv2.rectangle(img, (x, y), (x+w, y+h), (40, 180, 240), 1)
+    return img

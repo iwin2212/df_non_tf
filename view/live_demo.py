@@ -15,9 +15,14 @@ def gen(camera):
 	while True:
 		frame = np.asarray(bytearray(camera.get_frame()), dtype="uint8")
 		img = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-		image = preprocess(img=img, frame_rate=3, prev=prev)
-		yield (b'--frame\r\n'
+		try:
+			image = preprocess(img=img, frame_rate=3, prev=prev)
+			yield (b'--frame\r\n'
 				b'Content-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpg', image)[1].tobytes() + b'\r\n')
+		except Exception as error:
+			print('Error in gen(camera): {}'.format(error))
+			return ""
+		
 
 
 @mod.route('/live_stream')

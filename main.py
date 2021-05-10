@@ -9,7 +9,6 @@ app.register_blueprint(take_shot.mod)
 app.register_blueprint(live_demo.mod)
 
 
-
 @app.route('/')
 def index():
     from view.utils.ha_2_flask import create_rest_api

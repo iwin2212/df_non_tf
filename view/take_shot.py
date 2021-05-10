@@ -17,6 +17,7 @@ import numpy as np
 import time
 from custom_deepface.deepface.commons import distance as dst
 import pandas as pd
+from view.utils.stream import draw_retangle
 mod = Blueprint('take_shot', __name__)
 
 
@@ -28,10 +29,16 @@ def take_shots():
 def generate(camera):
     """Video streaming generator function."""
     while True:
-        frame = camera.get_frame()
-        yield (b'--frame\r\n'
-            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        frame = np.asarray(bytearray(camera.get_frame()), dtype="uint8")
+        img = cv2.imdecode(frame, cv2.IMREAD_COLOR)
 
+        try:
+            image = draw_retangle(img=img)
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpg', image)[1].tobytes() + b'\r\n')
+        except Exception as error:
+            print('Error in generate(camera): {}'.format(error))
+            return ""
 
 
 @mod.route('/video_feed')
@@ -51,14 +58,13 @@ def snap_shot():
     return jsonify(result=check_file_exist(new_shot))
 
 
-
 @mod.route('/snapshot',  methods=['POST'])
 def snapshot():
     link_list = []
-    while(len(link_list)<=10):
+    while(len(link_list) <= 10):
         img = Camera().get_frame()
         image = np.asarray(bytearray(img), dtype="uint8")
-        prev  = time.time()
+        prev = time.time()
         try:
             image = detect_face(cv2.imdecode(image, cv2.IMREAD_COLOR))
             new_shot = get_new_brand()
@@ -69,14 +75,13 @@ def snapshot():
         except Exception as error:
             print("Error: {}".format(error))
             now = time.time()
-            
+
             if ((now-prev) > 10):
                 print("Exceeded the time limit : {} > 10 (s)".format((now-prev)))
-                return {"result" : "Connection denied" , "reason" : "Exceeded the time limit", "file_list": link_list}
+                return {"result": "Connection denied", "reason": "Exceeded the time limit", "file_list": link_list}
             continue
     cv2.destroyAllWindows()
-    return {"result" : "Success" , "file_list": link_list}
-
+    return {"result": "Success", "file_list": link_list}
 
 
 @mod.route('/predict_snapshot',  methods=['POST'])
@@ -86,7 +91,7 @@ def predict_snapshot():
     df = pd.DataFrame(embeddings, columns=['employee', 'embedding'])
     df['distance_metric'] = distance_metric
     threshold = dst.findThreshold(model_name, distance_metric)-0.1
-    
+
     face_pixels = get_face_pixels()
     if face_pixels.shape[1:3] == input_shape:
         if df.shape[0] > 0:

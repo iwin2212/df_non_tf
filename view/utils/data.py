@@ -23,7 +23,7 @@ def represent(img_path, enforce_detection=True, detector_backend='opencv', grays
     if grayscale == True:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        img_pixels = get_face_pixels(img)
+    img_pixels = get_face_pixels(img)
     embedding = predict_tfmodel(img_pixels)[0].tolist()
     return embedding
 
