@@ -11,8 +11,6 @@ app.register_blueprint(live_demo.mod)
 
 @app.route('/')
 def index():
-    from view.utils.ha_2_flask import create_rest_api
-    create_rest_api()
     return render_template("/index.html")
 
 

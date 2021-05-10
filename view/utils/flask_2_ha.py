@@ -29,7 +29,3 @@ def get_entity_state(entity):
     response = requests.request("GET", states_api.format(
         entity), headers=headers, data=payload)
     return response.text
-
-
-
-
