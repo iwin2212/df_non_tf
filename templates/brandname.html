@@ -43,7 +43,7 @@ https://templatemo.com/tm-540-lava-landing-page
 
 
         <!-- ***** Header Area Start ***** -->
-        {%block content%}
+        {%block header%}
         {%include 'header_footer/header.html' %}
         {%endblock%}
         <!-- ***** Header Area End ***** -->
@@ -77,7 +77,7 @@ https://templatemo.com/tm-540-lava-landing-page
                             {% for img in list_unknown_img %}
                             <div class="item service-item">
                                 <div class="testimonial-content">
-                                    <i><img src="{{img}}" id="{{img}}" alt="Author One" class="container"></i>
+                                    <i><img src="{{img}}" alt="Author One" class="container"></i>
                                     <input type='text' name='user' value="" placeholder="Ảnh cần chưa có tên" class="form-control" required>
                                 </div>
                             </div>
@@ -86,6 +86,8 @@ https://templatemo.com/tm-540-lava-landing-page
                     </div>
                     <div class="left-text col-lg-6 col-md-12 col-sm-12 col-xs-12" data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
                         <input class="btn btn-warning" id="rename" type="button" onclick="rename()" value="Lưu lại" />
+                        <input class="btn btn-warning container" type="button" onclick="delete_img('{{img}}')" value="Xoá ảnh này" style="margin-top: 5%;" />
+                        <input class="btn btn-warning container" type="button" onclick="delete_img(this)" value="Xoá ảnh này" style="margin-top: 5%;" />
                     </div>
 
                     {% else %}
@@ -99,29 +101,20 @@ https://templatemo.com/tm-540-lava-landing-page
                                 </div>
                                 <div class="testimonial-content">
                                     <i><img src="{{img}}" alt="Author One" class="container"></i>
-                                    <input type='text' id='{{img}}' onkeyup="get_brand(this)" placeholder="Ảnh chưa có tên" class="form-control" style="margin-top: 5%;">
-                                    <input class="btn btn-warning container" type="button" onclick="delete_img('{{img}}')" value="Xoá ảnh này" style="margin-top: 5%;" />
+                                    <input type='text' onkeyup="get_brand(this)" placeholder="Ảnh chưa có tên" class="form-control" style="margin-top: 5%;">
+                                    <input class="btn btn-warning container" type="button" onclick="delete_img(this)" value="Xoá ảnh này" style="margin-top: 5%;" />
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
                     </div>
-                    <div class="left-text col-sm-12 col-xs-12" data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
-                        <input class="btn btn-warning" id="rename" type="button" onclick="rename()" value="Lưu lại" />
-                        <div id="loading" style="display: none;">
-                            <div class="spinner-grow text-success" role="status">
-                                <span class="sr-only">Loading...</span>
-                            </div>
-                            <div class="spinner-grow text-danger" role="status">
-                                <span class="sr-only">Loading...</span>
-                            </div>
-                            <div class="spinner-grow text-warning" role="status">
-                                <span class="sr-only">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
 
                     {% endif %}
+
+                    {%block loading%}
+                    {%include 'loading/loading.html' %}
+                    {%endblock%}
+
                 </div>
             </div>
         </section>
