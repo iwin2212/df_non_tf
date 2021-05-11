@@ -1,20 +1,15 @@
 from pathlib import Path
 import io
-from const import snap_path, ROOT_DIR
+from const import snap_path, ROOT_DIR, video_source
 import os
 from view.utils.data import add_img2db
 import yaml
 import time
+import cv2
+
 
 def get_new_brand():
-    name = str(int(time.time()))
-    index = 0
-    while(True):
-        new_brand = os.path.join(snap_path, name+str(index) + '.jpg')
-        if Path(new_brand).is_file():
-            index += 1
-        else:
-            return new_brand
+    return os.path.join(snap_path, str(int(time.time())) + '.jpg')
 
 
 def check_file_exist(file_path):
@@ -64,3 +59,7 @@ def get_token():
     data = yaml2dict(secret_file)
     authen_code = data['token']
     return authen_code
+
+
+def destroy_camera():
+    cv2.VideoCapture(video_source).release()

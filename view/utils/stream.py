@@ -46,7 +46,7 @@ def preprocess(img, frame_rate, prev):
 
                         df['distance'] = df.apply(findDistance, axis=1)
                         df = df.sort_values(by=["distance"])
-
+                        print(df)
                         list_candidate = []
                         list_distance = []
                         for i in range(3):
@@ -64,8 +64,8 @@ def preprocess(img, frame_rate, prev):
                                 candidate_label = i
                                 best_distance = distance
                                 break
-                        print(
-                            "\n-------------> {} - {}\n".format(candidate_label, threshold))
+                        # print(
+                        #     "\n-------------> {} - {}\n".format(candidate_label, threshold))
                         # show name
                         cv2.putText(
                             img, candidate_label, (x+int(w/2), y+h + 13), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)

@@ -38,27 +38,65 @@ def check_config():
     return response.text
 
 
-def create_rest_api(filename="rest_command.yaml"):
-    command_file_path = os.path.join(ROOT_DIR, filename)
+def create_rest_api(service_name, filename="rest_command.yaml"):
+    try:
+        command_file_path = os.path.join(ROOT_DIR, filename)
 
-    if not check_file_exist(command_file_path):
-        print("File is not found. Create {} in homeassistant.".format(filename))
+        if not check_file_exist(command_file_path):
+            print("File is not found. Create {} in homeassistant.".format(filename))
 
-        data = {
-            "snapshot": {
-                "url": snapshot_api,
-                "method": "POST",
-                "payload": "{}",
-                "content_type": "application/json; charset=utf-8"
+            data = {
+                service_name: {
+                    "url": snapshot_api,
+                    "method": "POST",
+                    "payload": "{}",
+                    "content_type": "application/json; charset=utf-8"
+                }
             }
-        }
-        dict2yaml(data, command_file_path)
-        print(" *** You need to restart home assistant to take effect ***")
-        # try:
-        #     restart_ha()
-        #     print("Next step, you will persistently wait while restarting HA service.")
-        # except Exception as error:
-        #     print("Error: {}".format(error))
+            dict2yaml(data, command_file_path)
+            print(" *** You need to restart home assistant to take effect ***")
+            # try:
+            #     restart_ha()
+            #     print("Next step, you will persistently wait while restarting HA service.")
+            # except Exception as error:
+            #     print("Error: {}".format(error))
 
-    if check_file_exist(command_file_path):
-        print("File {} is ready to use.".format(filename))
+        if check_file_exist(command_file_path):
+            print("File {} is ready to use.".format(filename))
+            return {"result": True, "route": command_file_path}
+    except Exception as error:
+        return {"result": False, "reason": error, "whereis": "create_rest_api"}
+
+
+def create_automation():
+    """
+    - action: 
+      - data:
+          message: chụp ảnh đeeee
+        service: rest_command.snapshot
+      alias: chụp ảnh
+      condition: []
+      id: '1620572203'
+      trigger:
+      - entity_id: switch.none
+        for: 00:00:00
+        from: 'off'
+        platform: state
+        to: 'on'"""
+
+    data_form = """
+        {
+            "action": [{
+                "alias": {},
+                "condition": [],
+                "id": {},
+                "trigger": [{ 
+                    "entity_id": {},
+                    "platform": "state",
+                    "from": "off",
+                    "to": "on"
+                }]
+            }]
+        }
+    """
+    return {}

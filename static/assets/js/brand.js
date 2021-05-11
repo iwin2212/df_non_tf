@@ -32,7 +32,7 @@ function delete_img(en) {
 function rename() {
   show_loading();
   rename_list = {};
-  if (list_unknown_img.length == 1){
+  if (list_unknown_img.length == 1) {
     new_name = document.getElementById("img_name").value.trim();
     rename_list[list_unknown_img[0]] = new_name;
   }
@@ -50,9 +50,11 @@ function rename() {
     });
   }
 
-  console.log(rename_list);
+  console.log(Object.keys(list_unknown_img).length);
+  console.log(Object.keys(rename_list));
+  console.log(Object.keys(rename_list).length);
   $.post('./readdress?rename_list=' + JSON.stringify(rename_list), function (data, status) {
-      hide_loading();
+    hide_loading();
   });
   window.location.href = "./brandname";
 }
@@ -66,3 +68,8 @@ function hide_loading() {
   $("#loading").hide();
   $("#rename").show();
 }
+
+$('.owl-nav').ready(function (event) {
+  $('.owl-prev span').hide();
+});
+

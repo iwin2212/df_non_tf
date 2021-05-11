@@ -8,6 +8,7 @@ else:
 import numpy as np
 import cv2
 from view.utils.stream import preprocess
+import time
 mod = Blueprint('live_demo', __name__)
 prev = 0
 
@@ -18,7 +19,7 @@ def gen(camera):
 		try:
 			image = preprocess(img=img, frame_rate=3, prev=prev)
 			yield (b'--frame\r\n'
-				b'Content-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpg', image)[1].tobytes() + b'\r\n')
+				b'Content-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpeg', image)[1].tobytes() + b'\r\n')
 		except Exception as error:
 			print('Error in gen(camera): {}'.format(error))
 			return ""
@@ -27,6 +28,7 @@ def gen(camera):
 
 @mod.route('/live_stream')
 def live_stream():
+    time.sleep(0.01)
     return Response(gen(Camera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 

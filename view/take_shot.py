@@ -18,6 +18,7 @@ import time
 from custom_deepface.deepface.commons import distance as dst
 import pandas as pd
 from view.utils.stream import draw_retangle
+from utils import destroy_camera
 mod = Blueprint('take_shot', __name__)
 
 
@@ -35,7 +36,7 @@ def generate(camera):
         try:
             image = draw_retangle(img=img)
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpg', image)[1].tobytes() + b'\r\n')
+                   b'Content-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpeg', image)[1].tobytes() + b'\r\n')
         except Exception as error:
             print('Error in generate(camera): {}'.format(error))
             return ""
@@ -123,13 +124,14 @@ def predict_snapshot():
                     candidate_label = i
                     best_distance = distance
                     break
-            print(
-                "\n-------------> {} - {}\n".format(candidate_label, threshold))
+            # print(
+            #     "\n-------------> {} - {}\n".format(candidate_label, threshold))
     return {}
 
 
 @mod.route('/brandname')
 def brandname():
+    destroy_camera()
     list_unknown_img = get_list_unknown_img()
     return render_template('./brandname.html', list_unknown_img=list_unknown_img)
 
@@ -137,6 +139,7 @@ def brandname():
 @mod.route("/readdress",  methods=['POST'])
 def readdress():
     rename_list = request.args.get("rename_list")
+    print(rename_list)
     data = literal_eval(rename_list)
     for key, value in data.items():
         rename(key, value)
