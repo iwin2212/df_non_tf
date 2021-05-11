@@ -4,10 +4,9 @@ from view.utils.lite_predict import predict_tfmodel
 from custom_deepface.deepface.commons import functions, distance as dst
 import cv2
 import pandas as pd
-import time
 
-def preprocess(img, frame_rate, prev):
-    time_elapsed = time.time() - prev
+
+def preprocess(img):
     threshold = dst.findThreshold(model_name, distance_metric)-0.1
 
     # loading database
@@ -30,45 +29,44 @@ def preprocess(img, frame_rate, prev):
             cut_img, face_pixels, region = functions.preprocess_face(img=img[y:y+h, x:x+w], target_size=(
                 input_shape_y, input_shape_x), enforce_detection=False, return_region=True)
 
-            if time_elapsed > 1./frame_rate:
-                prev = time.time()
-                # check preprocess_face function handled
-                if face_pixels.shape[1:3] == input_shape:
-                    if df.shape[0] > 0:
-                        img1_representation = predict_tfmodel(face_pixels)[
-                            0, :]
+            # check preprocess_face function handled
+            if face_pixels.shape[1:3] == input_shape:
+                if df.shape[0] > 0:
+                    img1_representation = predict_tfmodel(face_pixels)[
+                        0, :]
 
-                        def findDistance(row):
-                            img2_representation = row['embedding']
-                            distance = dst.findCosineDistance(
-                                img1_representation, img2_representation)
-                            return distance
+                    def findDistance(row):
+                        img2_representation = row['embedding']
+                        distance = dst.findCosineDistance(
+                            img1_representation, img2_representation)
+                        return distance
 
-                        df['distance'] = df.apply(findDistance, axis=1)
-                        df = df.sort_values(by=["distance"])
-                        print(df)
-                        list_candidate = []
-                        list_distance = []
-                        for i in range(3):
-                            candidate = df.iloc[i]
-                            candidate_label = candidate['employee']
-                            best_distance = candidate['distance']
-                            list_candidate.append(candidate_label)
-                            list_distance.append(best_distance)
-                        candidate_label = 'unknown'
-                        best_distance = 0
-                        for i in list_candidate:
-                            distance = list_distance[list_candidate.index(
-                                i)]
-                            if (list_candidate.count(i) >= 2 and distance < threshold):
-                                candidate_label = i
-                                best_distance = distance
-                                break
-                        # print(
-                        #     "\n-------------> {} - {}\n".format(candidate_label, threshold))
-                        # show name
-                        cv2.putText(
-                            img, candidate_label, (x+int(w/2), y+h + 13), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
+                    df['distance'] = df.apply(findDistance, axis=1)
+                    df = df.sort_values(by=["distance"])
+                    # print(df)
+                    list_candidate = []
+                    list_distance = []
+                    for i in range(3):
+                        candidate = df.iloc[i]
+                        candidate_label = candidate['employee']
+                        best_distance = candidate['distance']
+                        list_candidate.append(candidate_label)
+                        list_distance.append(best_distance)
+                    candidate_label = 'unknown'
+                    best_distance = 0
+                    for i in list_candidate:
+                        distance = list_distance[list_candidate.index(
+                            i)]
+                        if (list_candidate.count(i) >= 2 and distance < threshold):
+                            candidate_label = i
+                            best_distance = distance
+                            break
+                    # print(
+                    #     "\n-------------> {} - {}\n".format(candidate_label, threshold))
+                    # show name
+                    cv2.putText(
+                        img, candidate_label, (x+int(w/2), y+h + 13), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
+    
     return img
 
 

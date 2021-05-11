@@ -14,11 +14,6 @@ def detect_face(img_path, enforce_detection=True, detector_backend='opencv'):
 
 def represent(img_path, enforce_detection=True, detector_backend='opencv', grayscale=False):
     img = functions.load_image(img_path)
-    # detect and align
-    # img = functions.preprocess_face(img=img_path, target_size=(
-    #     input_shape_y, input_shape_x), enforce_detection=enforce_detection, detector_backend=detector_backend)
-    # post-processing
-
     # post-processing
     if grayscale == True:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)

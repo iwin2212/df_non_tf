@@ -1,13 +1,10 @@
 from flask import request, render_template, Blueprint, Response
 from importlib import import_module
 import os
-from view.utils.lite_predict import predict_tfmodel
 from flask import render_template, Response, jsonify
-from const import input_shape, embedding_path, distance_metric, model_name
 from utils import get_new_brand, check_file_exist, get_list_unknown_img, rename
 from view.utils.data import detect_face
 from ast import literal_eval
-from view.utils.data import get_face_pixels
 if os.environ.get('CAMERA'):
     Camera = import_module('camera_' + os.environ['CAMERA']).Camera
 else:
@@ -15,10 +12,8 @@ else:
 import cv2
 import numpy as np
 import time
-from custom_deepface.deepface.commons import distance as dst
-import pandas as pd
 from view.utils.stream import draw_retangle
-from utils import destroy_camera
+from utils import destroy_camera, predict_snapshot
 mod = Blueprint('take_shot', __name__)
 
 
@@ -81,52 +76,8 @@ def snapshot():
                 return {"result": "Connection denied", "reason": "Exceeded the time limit", "file_list": link_list}
             continue
     cv2.destroyAllWindows()
-    return {"result": "Success", "file_list": link_list}
-
-
-@mod.route('/predict_snapshot',  methods=['POST'])
-def predict_snapshot():
-    # loading database
-    embeddings = np.load(embedding_path, allow_pickle=True)
-    df = pd.DataFrame(embeddings, columns=['employee', 'embedding'])
-    df['distance_metric'] = distance_metric
-    threshold = dst.findThreshold(model_name, distance_metric)-0.1
-
-    face_pixels = get_face_pixels()
-    if face_pixels.shape[1:3] == input_shape:
-        if df.shape[0] > 0:
-            img1_representation = predict_tfmodel(face_pixels)[
-                0, :]
-
-            def findDistance(row):
-                img2_representation = row['embedding']
-                distance = dst.findCosineDistance(
-                    img1_representation, img2_representation)
-                return distance
-
-            df['distance'] = df.apply(findDistance, axis=1)
-            df = df.sort_values(by=["distance"])
-
-            list_candidate = []
-            list_distance = []
-            for i in range(3):
-                candidate = df.iloc[i]
-                candidate_label = candidate['employee']
-                best_distance = candidate['distance']
-                list_candidate.append(candidate_label)
-                list_distance.append(best_distance)
-            candidate_label = 'unknown'
-            best_distance = 0
-            for i in list_candidate:
-                distance = list_distance[list_candidate.index(
-                    i)]
-                if (list_candidate.count(i) >= 2 and distance < threshold):
-                    candidate_label = i
-                    best_distance = distance
-                    break
-            # print(
-            #     "\n-------------> {} - {}\n".format(candidate_label, threshold))
-    return {}
+    identity, duration = predict_snapshot(link_list)
+    return {"result": "Success", "identity": identity, "duration": duration}
 
 
 @mod.route('/brandname')

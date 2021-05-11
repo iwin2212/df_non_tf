@@ -10,14 +10,21 @@ import cv2
 from view.utils.stream import preprocess
 import time
 mod = Blueprint('live_demo', __name__)
-prev = 0
 
 def gen(camera):
 	while True:
 		frame = np.asarray(bytearray(camera.get_frame()), dtype="uint8")
 		img = cv2.imdecode(frame, cv2.IMREAD_COLOR)
 		try:
-			image = preprocess(img=img, frame_rate=3, prev=prev)
+			image = preprocess(img=img)
+
+			cTime = time.time()
+			# print("fps: {}".format(1/(cTime-pTime)))
+			# print("duration: {}".format((cTime-pTime)))
+			fps = 1/(cTime - pTime)
+			pTime = cTime
+			cv2.putText(image, str(int(fps)), (60, 40), cv2.FONT_HERSHEY_PLAIN, 3, (0, 0, 255), 3)
+			
 			yield (b'--frame\r\n'
 				b'Content-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpeg', image)[1].tobytes() + b'\r\n')
 		except Exception as error:
