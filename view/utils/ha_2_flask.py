@@ -1,8 +1,9 @@
 from utils import check_file_exist, dict2yaml, get_token
-from const import ROOT_DIR, snapshot_api, restart_api, config_api
+from const import ROOT_DIR, snapshot_api, restart_api, config_api, automation_api
 import os
 import subprocess
 import requests
+import json
 
 
 def restart_ha():
@@ -55,11 +56,11 @@ def create_rest_api(service_name, filename="rest_command.yaml"):
             }
             dict2yaml(data, command_file_path)
             print(" *** You need to restart home assistant to take effect ***")
-            # try:
-            #     restart_ha()
-            #     print("Next step, you will persistently wait while restarting HA service.")
-            # except Exception as error:
-            #     print("Error: {}".format(error))
+            try:
+                restart_ha()
+                print("Next step, you will persistently wait while restarting HA service.")
+            except Exception as error:
+                print("Error: {}".format(error))
 
         if check_file_exist(command_file_path):
             print("File {} is ready to use.".format(filename))
@@ -68,35 +69,33 @@ def create_rest_api(service_name, filename="rest_command.yaml"):
         return {"result": False, "reason": error, "whereis": "create_rest_api"}
 
 
-def create_automation():
-    """
-    - action: 
-      - data:
-          message: chụp ảnh đeeee
-        service: rest_command.snapshot
-      alias: chụp ảnh
-      condition: []
-      id: '1620572203'
-      trigger:
-      - entity_id: switch.none
-        for: 00:00:00
-        from: 'off'
-        platform: state
-        to: 'on'"""
-
-    data_form = """
+def create_automation(id_, entity_id):
+    payload = json.dumps({
+    "alias": "thangtest",
+    "trigger": [
         {
-            "action": [{
-                "alias": {},
-                "condition": [],
-                "id": {},
-                "trigger": [{ 
-                    "entity_id": {},
-                    "platform": "state",
-                    "from": "off",
-                    "to": "on"
-                }]
-            }]
+        "platform": "state",
+        "entity_id": entity_id,
+        "to": "on"
         }
-    """
-    return {}
+    ],
+    "condition": [],
+    "action": [
+        {
+        "service": "media_player.turn_on",
+        "target": {
+            "entity_id": "media_player.office"
+        }
+        }
+    ]
+    })
+
+    headers = {
+        "Authorization": "Bearer " + get_token(),
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", automation_api.format(id_), headers=headers, data=payload)
+
+    return (response.text)
+

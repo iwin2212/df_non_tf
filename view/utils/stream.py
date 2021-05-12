@@ -7,8 +7,6 @@ import pandas as pd
 
 
 def preprocess(img):
-    threshold = dst.findThreshold(model_name, distance_metric)-0.1
-
     # loading database
     embeddings = np.load(embedding_path, allow_pickle=True)
     df = pd.DataFrame(embeddings, columns=['employee', 'embedding'])
@@ -45,28 +43,19 @@ def preprocess(img):
                     df = df.sort_values(by=["distance"])
                     # print(df)
                     list_candidate = []
-                    list_distance = []
                     for i in range(3):
                         candidate = df.iloc[i]
                         candidate_label = candidate['employee']
-                        best_distance = candidate['distance']
-                        list_candidate.append(candidate_label)
-                        list_distance.append(best_distance)
-                    candidate_label = 'unknown'
-                    best_distance = 0
-                    for i in list_candidate:
-                        distance = list_distance[list_candidate.index(
-                            i)]
-                        if (list_candidate.count(i) >= 2 and distance < threshold):
-                            candidate_label = i
-                            best_distance = distance
+                        if (candidate_label in list_candidate):
                             break
+                        else:
+                            list_candidate.append(candidate_label)
+                            candidate_label = 'unknown'
                     # print(
                     #     "\n-------------> {} - {}\n".format(candidate_label, threshold))
                     # show name
                     cv2.putText(
                         img, candidate_label, (x+int(w/2), y+h + 13), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
-    
     return img
 
 

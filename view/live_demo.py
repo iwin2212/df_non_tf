@@ -13,6 +13,7 @@ mod = Blueprint('live_demo', __name__)
 
 def gen(camera):
 	while True:
+		pTime = time.time()
 		frame = np.asarray(bytearray(camera.get_frame()), dtype="uint8")
 		img = cv2.imdecode(frame, cv2.IMREAD_COLOR)
 		try:
@@ -20,7 +21,7 @@ def gen(camera):
 
 			cTime = time.time()
 			# print("fps: {}".format(1/(cTime-pTime)))
-			# print("duration: {}".format((cTime-pTime)))
+			print("duration: {}".format((cTime-pTime)))
 			fps = 1/(cTime - pTime)
 			pTime = cTime
 			cv2.putText(image, str(int(fps)), (60, 40), cv2.FONT_HERSHEY_PLAIN, 3, (0, 0, 255), 3)

@@ -1,6 +1,6 @@
 from pathlib import Path
 import io
-from const import snap_path, ROOT_DIR, video_source
+from const import snap_path, ROOT_DIR, video_source, img_path, result_path
 import os
 from view.utils.data import add_img2db
 import yaml
@@ -10,8 +10,11 @@ from custom_deepface.deepface.commons import distance as dst
 import pandas as pd
 from view.utils.data import get_face_pixels
 from view.utils.lite_predict import predict_tfmodel
-from const import input_shape, embedding_path, distance_metric, model_name
+from const import input_shape, embedding_path, distance_metric, model_name, input_shape_x, input_shape_y
 import numpy as np
+import json
+from custom_deepface.deepface.commons import functions
+
 
 def get_new_brand():
     return os.path.join(snap_path, str(int(time.time())) + '.jpg')
@@ -59,6 +62,17 @@ def dict2yaml(dict_, filename):
         yaml.dump(dict_, outfile, default_flow_style=False, allow_unicode=True)
 
 
+def data2json(data, json_file_path):
+    with open(json_file_path, 'w') as outfile:
+        json.dump(data, outfile, indent=4)
+
+
+def json2data(json_file_path):
+    with open(json_file_path) as json_file:
+        data = json.load(json_file)
+    return data
+
+
 def get_token():
     secret_file = os.path.join(ROOT_DIR, 'secrets.yaml')
     data = yaml2dict(secret_file)
@@ -70,52 +84,131 @@ def destroy_camera():
     cv2.VideoCapture(video_source).release()
 
 
-def predict_snapshot(list_img):
+def get_list_img_path(file_path):
+    list_img_path = []
+    for root, dirs, files in os.walk(file_path, topdown=False):
+        list_img_path = [os.path.join(root, img)
+                         for img in files if (".jpg") in img]
+    return list_img_path
+
+
+def predict_snapshot(img_path=img_path):
     pTime = time.time()
-    list_candidate = []
+    # case 1: snapshot from home assistant
+    if ("/usr/share" in img_path):
+        list_img_path = get_list_img_path(img_path)
+
+        df, face_cascade = load_database()
+
+        identity = predict_img_ha(list_img_path, df, face_cascade)
+
+    # case 2: snapshot from service via apis
+    else:  # have not done yet############
+        df, face_cascade = load_database()
+
+        identity = predict_img_local(img_path, df)
+
+    duration = time.time() - pTime
+    # data2json({"identity": identity, "duration": duration}, result_path)
+    # data = json2data(result_path)
+    # return (data['identity'] == identity)
+    return {"identity": identity, "duration": duration}
+
+
+def predict_img_local(img_path, df):
+    list_identity = []
+    for img in img_path:
+        list_candidate = []
+
+        face_pixels = get_face_pixels(img)
+        time.sleep(0.05)
+        if face_pixels.shape[1:3] == input_shape:
+            if df.shape[0] > 0:
+                img1_representation = predict_tfmodel(face_pixels)[
+                    0, :]
+
+                def findDistance(row):
+                    img2_representation = row['embedding']
+                    distance = dst.findCosineDistance(
+                        img1_representation, img2_representation)
+                    return distance
+
+                df['distance'] = df.apply(findDistance, axis=1)
+                df = df.sort_values(by=["distance"])
+                time.sleep(0.05)
+
+                list_candidate = []
+                for i in range(3):
+                    candidate = df.iloc[i]
+                    candidate_label = candidate['employee']
+                    if (candidate_label in list_candidate):
+                        break
+                    else:
+                        list_candidate.append(candidate_label)
+                        candidate_label = 'unknown'
+                time.sleep(0.05)
+        list_identity.append(candidate_label)
+    return max(list_identity, key=list_identity.count)
+
+
+def predict_img_ha(list_img_path, df, face_cascade):
+    list_identity = []
+    for img in list_img_path[:1]:
+        print(time.time())
+        img = cv2.imread(img)
+        faces = face_cascade.detectMultiScale(img,  1.3, 5)
+        
+        for (x, y, w, h) in faces:
+            if w > 130:  # discard small detected faces
+                # -------------------------------
+                # apply deep learning for custom_face
+                face_pixels = functions.preprocess_face(img=img[y:y+h, x:x+w], target_size=(
+                    input_shape_y, input_shape_x), enforce_detection=False)
+                print(time.time())
+
+                # check preprocess_face function handled
+                if face_pixels.shape[1:3] == input_shape:
+                    if df.shape[0] > 0:
+                        img1_representation = predict_tfmodel(face_pixels)[
+                            0, :]
+
+                        def findDistance(row):
+                            img2_representation = row['embedding']
+                            distance = dst.findCosineDistance(
+                                img1_representation, img2_representation)
+                            return distance
+
+                        df['distance'] = df.apply(findDistance, axis=1)
+                        df = df.sort_values(by=["distance"])
+                        print(time.time())
+                        print(df)
+                        list_candidate = []
+                        for i in range(3):
+                            candidate_label = df.iloc[i]['employee']
+                            if (candidate_label in list_candidate):
+                                break
+                            else:
+                                list_candidate.append(candidate_label)
+                                candidate_label = 'unknown'
+                        print(time.time())
+        list_identity.append(candidate_label)
+        print(time.time())
+    result = max(list_identity, key=list_identity.count)
+    print(time.time())
+    return result
+
+
+def get_result():
+    return json2data(result_path)
+
+
+def load_database():
     # loading database
     embeddings = np.load(embedding_path, allow_pickle=True)
     df = pd.DataFrame(embeddings, columns=['employee', 'embedding'])
     df['distance_metric'] = distance_metric
-    threshold = dst.findThreshold(model_name, distance_metric)-0.1
-
-    face_pixels = get_face_pixels()
-    time.sleep(0.05)
-    if face_pixels.shape[1:3] == input_shape:
-        if df.shape[0] > 0:
-            img1_representation = predict_tfmodel(face_pixels)[
-                0, :]
-
-            def findDistance(row):
-                img2_representation = row['embedding']
-                distance = dst.findCosineDistance(
-                    img1_representation, img2_representation)
-                return distance
-
-            df['distance'] = df.apply(findDistance, axis=1)
-            df = df.sort_values(by=["distance"])
-            time.sleep(0.05)
-
-            list_candidate = []
-            list_distance = []
-            for i in range(3):
-                candidate = df.iloc[i]
-                candidate_label = candidate['employee']
-                best_distance = candidate['distance']
-                list_candidate.append(candidate_label)
-                list_distance.append(best_distance)
-            candidate_label = 'unknown'
-            best_distance = 0
-            for i in list_candidate:
-                distance = list_distance[list_candidate.index(
-                    i)]
-                if (list_candidate.count(i) >= 2 and distance < threshold):
-                    candidate_label = i
-                    best_distance = distance
-                    break
-            list_candidate.append(candidate_label)
-            time.sleep(0.05)
-
-    identity = max(list_candidate,key=list_candidate.count)
-    duration = time.time()
-    return identity, duration
+    # -----------------------
+    opencv_path = functions.get_opencv_path()
+    face_detector_path = opencv_path+"haarcascade_frontalface_default.xml"
+    face_cascade = cv2.CascadeClassifier(face_detector_path)
+    return df, face_cascade

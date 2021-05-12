@@ -151,9 +151,11 @@ def load_image(img):
 		exact_image = True
 	
 	base64_img = False
-	if len(img) > 11 and img[0:11] == "data:image/":
-		base64_img = True
-	
+	try:
+		if len(img) > 11 and img[0:11] == "data:image/":
+			base64_img = True
+	except Exception as error:
+		print("Error load_image: {}".format(error))
 	#---------------------------
 	
 	if base64_img == True:
