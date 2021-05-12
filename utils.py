@@ -164,10 +164,10 @@ def predict_img_ha(list_img_path, df, face_cascade):
             if w > w_min:  # discard small detected faces
                 # -------------------------------
                 # apply deep learning for custom_face
-                cut_img, face_pixels, region = functions.preprocess_face(img=img[y:y+h, x:x+w], target_size=(
-                    input_shape_y, input_shape_x), enforce_detection=False, return_region=True)
+                face_pixels = functions.preprocess_face(img=img[y:y+h, x:x+w], target_size=(
+                    input_shape_y, input_shape_x), enforce_detection=False)
                 
-                print(time.time())
+                print(time.time(), "face_pixels")
 
                 # check preprocess_face function handled
                 if face_pixels.shape[1:3] == input_shape:
@@ -180,10 +180,10 @@ def predict_img_ha(list_img_path, df, face_cascade):
                             distance = dst.findCosineDistance(
                                 img1_representation, img2_representation)
                             return distance
-
                         df['distance'] = df.apply(findDistance, axis=1)
+                        print(time.time(), "predict")
                         df = df.sort_values(by=["distance"])
-                        print(time.time())
+                        print(time.time(), "sort")
                         print(df)
                         list_candidate = []
                         for i in range(3):
@@ -193,11 +193,10 @@ def predict_img_ha(list_img_path, df, face_cascade):
                             else:
                                 list_candidate.append(candidate_label)
                                 candidate_label = 'unknown'
-                        print(time.time())
+                        print(time.time(), "get 1 in 3")
         list_identity.append(candidate_label)
-        print(time.time())
     result = max(list_identity, key=list_identity.count)
-    print(time.time())
+    print(time.time(), "time out")
     return result
 
 
