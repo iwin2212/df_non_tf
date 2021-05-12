@@ -43,10 +43,8 @@ def test_analysis(distance_metric, source=0, time_threshold=5, frame_threshold=5
         try:
             t0 = time.time()
             ret, img = cap.read()
-            resolution_x = img.shape[1]
-            resolution_y = img.shape[0]
-            while(img.shape[0]>600):
-                img = cv2.resize(img, (int(resolution_x/2),int(resolution_y/2)))
+            while(img.shape[0]>300):
+                img = cv2.resize(img, (int(img.shape[1]/2),int(img.shape[0]/2)))
             fps = (1/(time.time() - t0))
             fpstext = "FPS: " + str(fps)[:2]
             if img is None:

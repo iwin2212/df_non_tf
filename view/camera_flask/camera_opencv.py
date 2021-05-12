@@ -24,9 +24,7 @@ class Camera(BaseCamera):
         while True:
             # read current frame
             _, img = camera.read()
-            resolution_x = img.shape[1]
-            resolution_y = img.shape[0]
-            while(img.shape[0]>600):
-                img = cv2.resize(img, (int(resolution_x/2),int(resolution_y/2)))
+            while(img.shape[0]>300):
+                img = cv2.resize(img, (int(img.shape[1]/2),int(img.shape[0]/2)))
             # encode as a jpeg image and return it
             yield cv2.imencode('.jpg', img)[1].tobytes()

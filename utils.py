@@ -156,24 +156,17 @@ def predict_img_ha(list_img_path, df, face_cascade):
     for img in list_img_path[:1]:
         print(time.time())
         img = cv2.imread(img)
+        while(img.shape[0]>300):
+            img = cv2.resize(img, (int(img.shape[1]/2),int(img.shape[0]/2)))
+            print(">>>>>>>>>>", img.shape)
         faces = face_cascade.detectMultiScale(img,  1.3, 5)
         
         for (x, y, w, h) in faces:
             if w > 130:  # discard small detected faces
                 # -------------------------------
-                enforce_detection = False
                 # apply deep learning for custom_face
-                img, region = functions.detect_face(img = img, enforce_detection = enforce_detection)
-                
-                if img.shape[0] > 0 and img.shape[1] > 0:
-                    img = functions.align_face(img = img, detector_backend = 'opencv')
-                else:
-                    if enforce_detection == True:
-                        raise ValueError("Detected face shape is ", img.shape,". Consider to set enforce_detection argument to False.")
-
-                img_pixels = np.array(img, dtype=np.float32)
-                face_pixels = np.expand_dims(img_pixels, axis = 0)
-                face_pixels /= 255 #normalize input in [0, 1]
+                cut_img, face_pixels, region = functions.preprocess_face(img=img[y:y+h, x:x+w], target_size=(
+                    input_shape_y, input_shape_x), enforce_detection=False, return_region=True)
                 
                 print(time.time())
 
