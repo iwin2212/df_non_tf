@@ -1,7 +1,7 @@
 import os
 
 model_path = "model/facenet.tflite"
-embedding_path = "database/embed.npy"
+embedding_path = "database/embeddings.npy"
 
 video_source = "rtsp://admin:ECSIAQ@192.168.1.47:554"
 # video_source = 0
@@ -11,6 +11,7 @@ UPLOAD_FOLDER = os.path.join(os.path.dirname(
     os.path.realpath(__file__)).split('/view')[0], "upload")
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 input_shape = input_shape_x, input_shape_y = 160, 160
+w_min = 100
 
 text_color = (255, 255, 255)
 distance_metric = 'cosine'
@@ -31,5 +32,3 @@ automation_api = "http://"+ ip_addr +"/api/config/automation/config/{}"
 result_path = "./static/result/result.json"
 img_path = "/usr/share/hassio/homeassistant/tmp/camera"
 
-w_min = 60
-# w_min = 130

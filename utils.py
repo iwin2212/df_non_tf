@@ -1,6 +1,6 @@
 from pathlib import Path
 import io
-from const import snap_path, ROOT_DIR, video_source, img_path, result_path
+from const import snap_path, ROOT_DIR, video_source, img_path, result_path, w_min
 import os
 from view.utils.data import add_img2db
 import yaml
@@ -161,7 +161,7 @@ def predict_img_ha(list_img_path, df, face_cascade):
         faces = face_cascade.detectMultiScale(img,  1.3, 5)
         
         for (x, y, w, h) in faces:
-            if w > 130:  # discard small detected faces
+            if w > w_min:  # discard small detected faces
                 # -------------------------------
                 # apply deep learning for custom_face
                 cut_img, face_pixels, region = functions.preprocess_face(img=img[y:y+h, x:x+w], target_size=(

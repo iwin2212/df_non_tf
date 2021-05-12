@@ -21,15 +21,3 @@ class tflite_model:
         self.model.invoke()
         output_data = self.model.get_tensor(output_details[0]['index'])
         return output_data
-
-
-# tfmodel = "facenet.tflite"
-# # Load the TFLite model and allocate tensors.
-# # interpreter = tf.lite.Interpreter(model_path=tfmodel)
-# interpreter = Interpreter(model_path=tfmodel)
-# interpreter.allocate_tensors()
-
-# model = tflite_model("facenet.tflite")
-# a = np.array(np.random.random_sample(size=(10, 160, 160, 3)), dtype=np.float32)
-# b = model.predict(a)
-# print(b.shape)
