@@ -6,7 +6,7 @@ import pandas as pd
 import cv2
 import time
 import os
-from const import embedding_path
+from const import embedding_path, w_min
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
@@ -60,7 +60,7 @@ def test_analysis(distance_metric, source=0, time_threshold=5, frame_threshold=5
             face_index = 0
 
             for (x, y, w, h) in faces:
-                if w > 130:  # discard small detected faces
+                if w > w_min:  # discard small detected faces
                     face_detected = True
                     if face_index == 0:
                         face_included_frames = face_included_frames + \

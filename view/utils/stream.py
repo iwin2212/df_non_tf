@@ -1,5 +1,5 @@
 import numpy as np
-from const import embedding_path, distance_metric, input_shape_x, input_shape_y, input_shape, model_name, text_color
+from const import embedding_path, distance_metric, input_shape_x, input_shape_y, input_shape, model_name, text_color, w_min, w_min
 from view.utils.lite_predict import predict_tfmodel
 from custom_deepface.deepface.commons import functions, distance as dst
 import cv2
@@ -18,7 +18,7 @@ def preprocess(img):
     faces = face_cascade.detectMultiScale(img,  1.3, 5)
 
     for (x, y, w, h) in faces:
-        if w > 130:  # discard small detected faces
+        if w > w_min:  # discard small detected faces
             # draw rectangle to main image
             cv2.rectangle(img, (x, y), (x+w, y+h), (40, 180, 240), 1)
             # -------------------------------------
@@ -66,7 +66,7 @@ def draw_retangle(img):
     faces = face_cascade.detectMultiScale(img,  1.3, 5)
 
     for (x, y, w, h) in faces:
-        if w > 130:  # discard small detected faces
+        if w > w_min:  # discard small detected faces
             # draw rectangle to main image
             cv2.rectangle(img, (x, y), (x+w, y+h), (40, 180, 240), 1)
     return img

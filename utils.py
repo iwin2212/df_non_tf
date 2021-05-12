@@ -158,7 +158,6 @@ def predict_img_ha(list_img_path, df, face_cascade):
         img = cv2.imread(img)
         while(img.shape[0]>300):
             img = cv2.resize(img, (int(img.shape[1]/2),int(img.shape[0]/2)))
-            print(">>>>>>>>>>", img.shape)
         faces = face_cascade.detectMultiScale(img,  1.3, 5)
         
         for (x, y, w, h) in faces:

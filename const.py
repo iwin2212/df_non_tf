@@ -30,3 +30,6 @@ automation_api = "http://"+ ip_addr +"/api/config/automation/config/{}"
 
 result_path = "./static/result/result.json"
 img_path = "/usr/share/hassio/homeassistant/tmp/camera"
+
+w_min = 60
+# w_min = 130
