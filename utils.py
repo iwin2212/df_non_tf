@@ -43,9 +43,7 @@ def rename(key, val):
     else:
         try:
             add_img2db(key, val)
-            # print("{} added to database".format(val))
             os.remove(key)
-            # print("removed {}".format(key))
         except Exception as error:
             print("Error in rename: {}".format(error))
 
@@ -149,6 +147,7 @@ def predict_img_local(img_path, df):
 
 
 def predict_img_ha(list_img_path, df, face_cascade):
+    candidate_label = 'unknown'
     if (str(type(list_img_path)) == "<class 'str'>"):
         img = cv2.imread(list_img_path)
         while(img.shape[0] > input_shape_size):
@@ -174,7 +173,7 @@ def predict_img_ha(list_img_path, df, face_cascade):
                 face_pixels = np.expand_dims(img_pixels, axis=0)
                 face_pixels /= 255  # normalize input in [0, 1]
 
-                print(time.time(), "face_pixels")
+                # print(time.time(), "face_pixels")
 
                 # check preprocess_face function handled
                 if face_pixels.shape[1:3] == input_shape:
@@ -188,11 +187,11 @@ def predict_img_ha(list_img_path, df, face_cascade):
                                 img1_representation, img2_representation)
                             return distance
                         df['distance'] = df.apply(findDistance, axis=1)
-                        print(time.time(), "predict")
+                        # print(time.time(), "predict")
                         df = df.sort_values(by=["distance"])
-                        print(time.time(), "sort")
-                        print(df)
-                        print('--------------------')
+                        # print(time.time(), "sort")
+                        # print(df)
+                        # print('--------------------')
                         list_candidates = df.iloc[0:3]['employee'].tolist()
                         if list_candidates.count(list_candidates[0]) >= 2:
                             candidate_label = list_candidates[0]
@@ -200,7 +199,7 @@ def predict_img_ha(list_img_path, df, face_cascade):
                             candidate_label = list_candidates[1]
                         else:
                             candidate_label = 'unknown'
-                        print(time.time(), "get 1 in 3")
+                        # print(time.time(), "get 1 in 3")
         result = candidate_label
     else:
         list_identity = []

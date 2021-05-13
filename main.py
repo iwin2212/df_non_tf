@@ -26,7 +26,6 @@ def get_results():
 def predict_snapshots():
     payload = request.get_json()
     img = os.path.join(img_path, payload['title'])
-    print(img)
     if check_file_exist(img):
         return predict_snapshot(img)
     else:
