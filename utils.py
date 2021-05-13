@@ -10,7 +10,7 @@ from custom_deepface.deepface.commons import distance as dst
 import pandas as pd
 from view.utils.data import get_face_pixels
 from view.utils.lite_predict import predict_tfmodel
-from const import input_shape, embedding_path, distance_metric, input_shape_x, input_shape_y, input_shape_size
+from const import input_shape, embedding_path, distance_metric, input_shape_size
 import numpy as np
 import json
 from custom_deepface.deepface.commons import functions
@@ -94,8 +94,8 @@ def predict_snapshot(img_path=img_path):
     pTime = time.time()
     # case 1: snapshot from home assistant
     if ("/usr/share" in img_path):
-        list_img_path = get_list_img_path(img_path)
-
+        # list_img_path = get_list_img_path(img_path)
+        list_img_path = img_path
         print(time.time())
         df, face_cascade = load_database()
         print(time.time(), "load database")
@@ -107,10 +107,9 @@ def predict_snapshot(img_path=img_path):
         identity = predict_img_local(img_path, df)
 
     duration = time.time() - pTime
-    # data2json({"identity": identity, "duration": duration}, result_path)
-    # data = json2data(result_path)
-    # return (data['identity'] == identity)
-    return {"identity": identity, "duration": duration}
+    data = {"identity": identity, "duration": duration}
+    data2json(data, result_path)
+    return data
 
 
 def predict_img_local(img_path, df):
@@ -150,10 +149,8 @@ def predict_img_local(img_path, df):
 
 
 def predict_img_ha(list_img_path, df, face_cascade):
-    list_identity = []
-    for img in list_img_path[:1]:
-        print(time.time())
-        img = cv2.imread(img)
+    if (str(type(list_img_path)) == "<class 'str'>"):
+        img = cv2.imread(list_img_path)
         while(img.shape[0] > input_shape_size):
             img = cv2.resize(img, (int(img.shape[1]/2), int(img.shape[0]/2)))
         faces = face_cascade.detectMultiScale(img,  1.3, 5)
@@ -204,8 +201,65 @@ def predict_img_ha(list_img_path, df, face_cascade):
                         else:
                             candidate_label = 'unknown'
                         print(time.time(), "get 1 in 3")
-        list_identity.append(candidate_label)
-    result = max(list_identity, key=list_identity.count)
+        result = candidate_label
+    else:
+        list_identity = []
+        for img in list_img_path[:1]:
+            print(time.time())
+            img = cv2.imread(img)
+            print(img.shape)
+            while(img.shape[0] > input_shape_size):
+                img = cv2.resize(img, (int(img.shape[1]/2), int(img.shape[0]/2)))
+            faces = face_cascade.detectMultiScale(img,  1.3, 5)
+            for (x, y, w, h) in faces:
+                if w > w_min:  # discard small detected faces
+                    # -------------------------------
+                    # apply deep learning for custom_face
+                    base_img = img.copy()
+                    img, region = functions.detect_face(
+                        img=img, enforce_detection=False)
+                    # --------------------------
+
+                    if img.shape[0] > 0 and img.shape[1] > 0:
+                        img = functions.align_face(img=img)
+                    else:
+                        img = base_img.copy()
+                    # --------------------------
+                    # post-processing
+                    img = cv2.resize(img, input_shape)
+                    img_pixels = np.array(img, dtype=np.float32)
+                    face_pixels = np.expand_dims(img_pixels, axis=0)
+                    face_pixels /= 255  # normalize input in [0, 1]
+
+                    print(time.time(), "face_pixels")
+
+                    # check preprocess_face function handled
+                    if face_pixels.shape[1:3] == input_shape:
+                        if df.shape[0] > 0:
+                            img1_representation = predict_tfmodel(face_pixels)[
+                                0, :]
+
+                            def findDistance(row):
+                                img2_representation = row['embedding']
+                                distance = dst.findCosineDistance(
+                                    img1_representation, img2_representation)
+                                return distance
+                            df['distance'] = df.apply(findDistance, axis=1)
+                            print(time.time(), "predict")
+                            df = df.sort_values(by=["distance"])
+                            print(time.time(), "sort")
+                            print(df)
+                            print('--------------------')
+                            list_candidates = df.iloc[0:3]['employee'].tolist()
+                            if list_candidates.count(list_candidates[0]) >= 2:
+                                candidate_label = list_candidates[0]
+                            elif list_candidates.count(list_candidates[1]) >= 2:
+                                candidate_label = list_candidates[1]
+                            else:
+                                candidate_label = 'unknown'
+                            print(time.time(), "get 1 in 3")
+            list_identity.append(candidate_label)
+        result = max(list_identity, key=list_identity.count)
     return result
 
 
