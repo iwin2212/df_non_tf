@@ -3,4 +3,6 @@ pandas
 gdown
 Pillow
 flask
+pyyaml
+apt install libgl1-mesa-glx
 # pip install --extra-index-url https://google-coral.github.io/py-repo/ tflite_runtime

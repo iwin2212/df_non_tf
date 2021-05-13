@@ -10,7 +10,7 @@ from custom_deepface.deepface.commons import distance as dst
 import pandas as pd
 from view.utils.data import get_face_pixels
 from view.utils.lite_predict import predict_tfmodel
-from const import input_shape, embedding_path, distance_metric, model_name, input_shape_x, input_shape_y
+from const import input_shape, embedding_path, distance_metric, input_shape_x, input_shape_y, input_shape_size
 import numpy as np
 import json
 from custom_deepface.deepface.commons import functions
@@ -85,11 +85,9 @@ def destroy_camera():
 
 
 def get_list_img_path(file_path):
-    list_img_path = []
     for root, dirs, files in os.walk(file_path, topdown=False):
-        list_img_path = [os.path.join(root, img)
-                         for img in files if (".jpg") in img]
-    return list_img_path
+        return [os.path.join(root, img)
+                for img in files if (".jpg") in img]
 
 
 def predict_snapshot(img_path=img_path):
@@ -98,10 +96,10 @@ def predict_snapshot(img_path=img_path):
     if ("/usr/share" in img_path):
         list_img_path = get_list_img_path(img_path)
 
+        print(time.time())
         df, face_cascade = load_database()
-
+        print(time.time(), "load database")
         identity = predict_img_ha(list_img_path, df, face_cascade)
-
     # case 2: snapshot from service via apis
     else:  # have not done yet############
         df, face_cascade = load_database()
@@ -156,17 +154,29 @@ def predict_img_ha(list_img_path, df, face_cascade):
     for img in list_img_path[:1]:
         print(time.time())
         img = cv2.imread(img)
-        while(img.shape[0]>300):
-            img = cv2.resize(img, (int(img.shape[1]/2),int(img.shape[0]/2)))
+        while(img.shape[0] > input_shape_size):
+            img = cv2.resize(img, (int(img.shape[1]/2), int(img.shape[0]/2)))
         faces = face_cascade.detectMultiScale(img,  1.3, 5)
-        
         for (x, y, w, h) in faces:
             if w > w_min:  # discard small detected faces
                 # -------------------------------
                 # apply deep learning for custom_face
-                face_pixels = functions.preprocess_face(img=img[y:y+h, x:x+w], target_size=(
-                    input_shape_y, input_shape_x), enforce_detection=False)
-                
+                base_img = img.copy()
+                img, region = functions.detect_face(
+                    img=img, enforce_detection=False)
+                # --------------------------
+
+                if img.shape[0] > 0 and img.shape[1] > 0:
+                    img = functions.align_face(img=img)
+                else:
+                    img = base_img.copy()
+                # --------------------------
+                # post-processing
+                img = cv2.resize(img, input_shape)
+                img_pixels = np.array(img, dtype=np.float32)
+                face_pixels = np.expand_dims(img_pixels, axis=0)
+                face_pixels /= 255  # normalize input in [0, 1]
+
                 print(time.time(), "face_pixels")
 
                 # check preprocess_face function handled
@@ -185,18 +195,17 @@ def predict_img_ha(list_img_path, df, face_cascade):
                         df = df.sort_values(by=["distance"])
                         print(time.time(), "sort")
                         print(df)
-                        list_candidate = []
-                        for i in range(3):
-                            candidate_label = df.iloc[i]['employee']
-                            if (candidate_label in list_candidate):
-                                break
-                            else:
-                                list_candidate.append(candidate_label)
-                                candidate_label = 'unknown'
+                        print('--------------------')
+                        list_candidates = df.iloc[0:3]['employee'].tolist()
+                        if list_candidates.count(list_candidates[0]) >= 2:
+                            candidate_label = list_candidates[0]
+                        elif list_candidates.count(list_candidates[1]) >= 2:
+                            candidate_label = list_candidates[1]
+                        else:
+                            candidate_label = 'unknown'
                         print(time.time(), "get 1 in 3")
         list_identity.append(candidate_label)
     result = max(list_identity, key=list_identity.count)
-    print(time.time(), "time out")
     return result
 
 

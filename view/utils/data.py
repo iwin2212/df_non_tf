@@ -1,6 +1,6 @@
 import numpy as np
 from custom_deepface.deepface.commons import functions, distance as dst
-from view.test.lite_predict import predict_tfmodel
+from view.utils.lite_predict import predict_tfmodel
 import cv2
 import os
 from const import embedding_path, input_shape_x, input_shape_y

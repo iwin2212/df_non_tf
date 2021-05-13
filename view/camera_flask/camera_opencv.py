@@ -1,7 +1,7 @@
 import os
 import cv2
 from view.camera_flask.base_camera import BaseCamera
-from const import video_source
+from const import video_source, input_shape_size
 
 
 class Camera(BaseCamera):
@@ -24,7 +24,7 @@ class Camera(BaseCamera):
         while True:
             # read current frame
             _, img = camera.read()
-            while(img.shape[0]>300):
+            while(img.shape[0]>input_shape_size):
                 img = cv2.resize(img, (int(img.shape[1]/2),int(img.shape[0]/2)))
             # encode as a jpeg image and return it
             yield cv2.imencode('.jpg', img)[1].tobytes()
