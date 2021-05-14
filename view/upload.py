@@ -4,9 +4,8 @@ from flask import request, render_template, Blueprint
 from view.utils.data import add_img2db
 
 from const import embedding_path, UPLOAD_FOLDER, ALLOWED_EXTENSIONS
-import numpy as np
-import pandas as pd
-from utils import destroy_camera
+# import numpy as np
+# import pandas as pd
 mod = Blueprint('upload', __name__)
 
 
@@ -17,7 +16,6 @@ def allowed_file(filename):
 
 @mod.route("/uploader", methods=['GET', 'POST'])
 def upload_file():
-    destroy_camera()
     if request.method == 'POST':
         uploaded_files = request.files.getlist("file[]")
         for index, file in enumerate(uploaded_files):

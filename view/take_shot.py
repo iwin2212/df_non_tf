@@ -13,7 +13,8 @@ import cv2
 import numpy as np
 import time
 from view.utils.stream import draw_retangle
-from utils import destroy_camera, predict_snapshot
+from utils import predict_snapshot
+import logging
 mod = Blueprint('take_shot', __name__)
 
 
@@ -33,7 +34,7 @@ def generate(camera):
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpeg', image)[1].tobytes() + b'\r\n')
         except Exception as error:
-            print('Error in generate(camera): {}'.format(error))
+            logging.warning('Error in generate(camera): {}'.format(error))
             return ""
 
 @mod.route('/video_feed')
@@ -68,11 +69,11 @@ def snapshot():
             link_list.append(new_shot)
             time.sleep(0.1)
         except Exception as error:
-            print("Error: {}".format(error))
+            logging.warning("Error: {}".format(error))
             now = time.time()
 
             if ((now-prev) > 10):
-                print("Exceeded the time limit : {} > 10 (s)".format((now-prev)))
+                logging.warning("Exceeded the time limit : {} > 10 (s)".format((now-prev)))
                 return {"result": "Connection denied", "reason": "Exceeded the time limit", "file_list": link_list}
             continue
     cv2.destroyAllWindows()
@@ -82,7 +83,6 @@ def snapshot():
 
 @mod.route('/brandname')
 def brandname():
-    destroy_camera()
     list_unknown_img = get_list_unknown_img()
     return render_template('./brandname.html', list_unknown_img=list_unknown_img)
 
@@ -90,7 +90,6 @@ def brandname():
 @mod.route("/readdress",  methods=['POST'])
 def readdress():
     rename_list = request.args.get("rename_list")
-    print(rename_list)
     data = literal_eval(rename_list)
     for key, value in data.items():
         rename(key, value)

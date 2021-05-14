@@ -2,7 +2,7 @@ from pathlib import Path
 import io
 
 from PIL.Image import new
-from const import snap_path,restart_api, ROOT_DIR, video_source, img_path, result_path, w_min
+from const import snap_path, restart_api, ROOT_DIR, video_source, img_path, result_path, w_min
 import os
 from view.utils.data import add_img2db
 import yaml
@@ -12,13 +12,20 @@ from custom_deepface.deepface.commons import distance as dst
 import pandas as pd
 from view.utils.data import get_face_pixels
 from view.utils.lite_predict import predict_tfmodel
-from const import input_shape,snapshot_api, embedding_path, distance_metric, input_shape_size
+from const import input_shape, snapshot_api, embedding_path, distance_metric, input_shape_size
 import numpy as np
 import subprocess
 import json
 from custom_deepface.deepface.commons import functions
 import requests
 from const import configration_path
+from importlib import import_module
+if os.environ.get('CAMERA'):
+    Camera = import_module('camera_' + os.environ['CAMERA']).Camera
+else:
+    from view.camera_flask.camera_opencv import Camera
+import logging
+
 
 def get_new_brand():
     return os.path.join(snap_path, str(int(time.time())) + '.jpg')
@@ -49,7 +56,7 @@ def rename(key, val):
             add_img2db(key, val)
             os.remove(key)
         except Exception as error:
-            print("Error in rename: {}".format(error))
+            logging.warning("Error in rename: {}".format(error))
 
 
 def yaml2dict(filename):
@@ -80,10 +87,6 @@ def get_token():
     data = yaml2dict(secret_file)
     authen_code = data['token']
     return authen_code
-
-
-def destroy_camera():
-    cv2.VideoCapture(video_source).release()
 
 
 def get_list_img_path(file_path):
@@ -153,66 +156,70 @@ def predict_img_local(img_path, df):
 def predict_img_ha(list_img_path, df, face_cascade):
     candidate_label = 'unknown'
     if (str(type(list_img_path)) == "<class 'str'>"):
-        img = cv2.imread(list_img_path)
-        while(img.shape[0] > input_shape_size):
-            img = cv2.resize(img, (int(img.shape[1]/2), int(img.shape[0]/2)))
-        faces = face_cascade.detectMultiScale(img,  1.3, 5)
-        for (x, y, w, h) in faces:
-            if w > w_min:  # discard small detected faces
-                # -------------------------------
-                # apply deep learning for custom_face
-                base_img = img.copy()
-                img, region = functions.detect_face(
-                    img=img, enforce_detection=False)
-                # --------------------------
+        list_identity = []
+        for img in list_img_path[:3]:
+            img = cv2.imread(list_img_path)
+            while(img.shape[0] > input_shape_size):
+                img = cv2.resize(img, (int(img.shape[1]/2), int(img.shape[0]/2)))
+            faces = face_cascade.detectMultiScale(img,  1.3, 5)
+            for (x, y, w, h) in faces:
+                if w > w_min:  # discard small detected faces
+                    # -------------------------------
+                    # apply deep learning for custom_face
+                    base_img = img.copy()
+                    img, region = functions.detect_face(
+                        img=img, enforce_detection=False)
+                    # --------------------------
 
-                if img.shape[0] > 0 and img.shape[1] > 0:
-                    img = functions.align_face(img=img)
-                else:
-                    img = base_img.copy()
-                # --------------------------
-                # post-processing
-                img = cv2.resize(img, input_shape)
-                img_pixels = np.array(img, dtype=np.float32)
-                face_pixels = np.expand_dims(img_pixels, axis=0)
-                face_pixels /= 255  # normalize input in [0, 1]
+                    if img.shape[0] > 0 and img.shape[1] > 0:
+                        img = functions.align_face(img=img)
+                    else:
+                        img = base_img.copy()
+                    # --------------------------
+                    # post-processing
+                    img = cv2.resize(img, input_shape)
+                    img_pixels = np.array(img, dtype=np.float32)
+                    face_pixels = np.expand_dims(img_pixels, axis=0)
+                    face_pixels /= 255  # normalize input in [0, 1]
 
-                # print(time.time(), "face_pixels")
+                    # print(time.time(), "face_pixels")
 
-                # check preprocess_face function handled
-                if face_pixels.shape[1:3] == input_shape:
-                    if df.shape[0] > 0:
-                        img1_representation = predict_tfmodel(face_pixels)[
-                            0, :]
+                    # check preprocess_face function handled
+                    if face_pixels.shape[1:3] == input_shape:
+                        if df.shape[0] > 0:
+                            img1_representation = predict_tfmodel(face_pixels)[
+                                0, :]
 
-                        def findDistance(row):
-                            img2_representation = row['embedding']
-                            distance = dst.findCosineDistance(
-                                img1_representation, img2_representation)
-                            return distance
-                        df['distance'] = df.apply(findDistance, axis=1)
-                        # print(time.time(), "predict")
-                        df = df.sort_values(by=["distance"])
-                        # print(time.time(), "sort")
-                        # print(df)
-                        # print('--------------------')
-                        list_candidates = df.iloc[0:3]['employee'].tolist()
-                        if list_candidates.count(list_candidates[0]) >= 2:
-                            candidate_label = list_candidates[0]
-                        elif list_candidates.count(list_candidates[1]) >= 2:
-                            candidate_label = list_candidates[1]
-                        else:
-                            candidate_label = 'unknown'
-                        # print(time.time(), "get 1 in 3")
-        result = candidate_label
+                            def findDistance(row):
+                                img2_representation = row['embedding']
+                                distance = dst.findCosineDistance(
+                                    img1_representation, img2_representation)
+                                return distance
+                            df['distance'] = df.apply(findDistance, axis=1)
+                            # print(time.time(), "predict")
+                            df = df.sort_values(by=["distance"])
+                            # print(time.time(), "sort")
+                            # print(df)
+                            # print('--------------------')
+                            list_candidates = df.iloc[0:3]['employee'].tolist()
+                            if list_candidates.count(list_candidates[0]) >= 2:
+                                candidate_label = list_candidates[0]
+                            elif list_candidates.count(list_candidates[1]) >= 2:
+                                candidate_label = list_candidates[1]
+                            else:
+                                candidate_label = 'unknown'
+                            # print(time.time(), "get 1 in 3")
+            list_identity.append(candidate_label)
+        result = max(list_identity, key=list_identity.count)
     else:
         list_identity = []
-        for img in list_img_path[:1]:
+        for img in list_img_path[:3]:
             print(time.time())
             img = cv2.imread(img)
             print(img.shape)
             while(img.shape[0] > input_shape_size):
-                img = cv2.resize(img, (int(img.shape[1]/2), int(img.shape[0]/2)))
+                img = cv2.resize(
+                    img, (int(img.shape[1]/2), int(img.shape[0]/2)))
             faces = face_cascade.detectMultiScale(img,  1.3, 5)
             for (x, y, w, h) in faces:
                 if w > w_min:  # discard small detected faces
@@ -253,6 +260,8 @@ def predict_img_ha(list_img_path, df, face_cascade):
                             print(time.time(), "sort")
                             print(df)
                             print('--------------------')
+
+                            candidate_label = 'unknown'
                             list_candidates = df.iloc[0:3]['employee'].tolist()
                             if list_candidates.count(list_candidates[0]) >= 2:
                                 candidate_label = list_candidates[0]
@@ -285,24 +294,25 @@ def load_database():
 def check_configration():
     data = open(configration_path, "r").read()
     if (data.find("/config/tmp/camera") != -1):
-        print("-> File {} is ready to use.".format(configration_path[configration_path.rfind('/')+1:]))
+        logging.warning(
+            "-> File {} is ready to use.".format(configration_path[configration_path.rfind('/')+1:]))
     else:
-        print("Error: File {} is missing '/config/tmp/camera' in 'whitelist_external_dirs'".format(configration_path[configration_path.rfind('/')+1:]))
+        logging.warning("Error: File {} is missing '/config/tmp/camera' in 'whitelist_external_dirs'".format(
+            configration_path[configration_path.rfind('/')+1:]))
 
 
 def check_running_condition():
     try:
-        print("Checking condition:")
+        logging.warning("Checking condition:")
 
-        print("- Task: Checking configration.yaml...")
+        logging.warning("- Task: Checking configration.yaml...")
         check_configration()
 
-        print("- Task: Checking rest_command.yaml exist...")
+        logging.warning("- Task: Checking rest_command.yaml exist...")
         create_rest_api('predict_snapshot')
 
-
     except Exception as error:
-        print("*** Error: {} ***".format(error))
+        logging.warning("*** Error: {} ***".format(error))
 
 
 def create_rest_api(service_name, filename="rest_command.yaml"):
@@ -310,7 +320,7 @@ def create_rest_api(service_name, filename="rest_command.yaml"):
         command_file_path = os.path.join(ROOT_DIR, filename)
 
         if not check_file_exist(command_file_path):
-            print("File is not found. Create {} in homeassistant.".format(filename))
+            logging.warning("File is not found. Create {} in homeassistant.".format(filename))
             data = {
                 service_name: {
                     "url": snapshot_api,
@@ -320,17 +330,17 @@ def create_rest_api(service_name, filename="rest_command.yaml"):
                 }
             }
             dict2yaml(data, command_file_path)
-            print(" *** We need to restart home assistant to take effect ***")
+            logging.warning(" *** We need to restart home assistant to take effect ***")
             try:
                 restart_ha()
-                print("Next step, you will persistently wait while restarting HA service.")
+                logging.warning("Next step, you will persistently wait while restarting HA service.")
             except Exception as error:
-                print("Error: {}".format(error))
+                logging.warning("Error: {}".format(error))
 
         if check_file_exist(command_file_path):
-            print("File {} existed.".format(filename))
+            logging.warning("File {} existed.".format(filename))
             db = yaml2dict(command_file_path)
-            new_db = {i:db[i] for i in db if (i!="predict_snapshot")}
+            new_db = {i: db[i] for i in db if (i != "predict_snapshot")}
             data_form = '{"title": "{{ title }}", "message": "{{ message }}"}'
             data = {
                 service_name: {
@@ -342,7 +352,7 @@ def create_rest_api(service_name, filename="rest_command.yaml"):
             }
             new_db.update(data)
             dict2yaml(new_db, command_file_path)
-            print("-> File {} is ready to use.".format(filename))
+            logging.warning("-> File {} is ready to use.".format(filename))
             return {"result": True, "route": command_file_path}
     except Exception as error:
         return {"result": False, "reason": error, "whereis": "create_rest_api"}
