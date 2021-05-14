@@ -60,7 +60,7 @@ https://templatemo.com/tm-540-lava-landing-page
                             <h1>Upload your images</h1>
                             <p>Tải lên một hoặc nhiều ảnh của cùng một người.</p>
                             <form action="/uploader" method="POST" enctype="multipart/form-data">
-                                <input class="btn main-button-slider" type="file" name="file[]" multiple=""/>
+                                <input class="btn main-button-slider" type="file" name="file[]" multiple="" />
 
                                 <table style="margin-top: 10px;" class="table table-borderless">
                                     <tr>
@@ -79,7 +79,7 @@ https://templatemo.com/tm-540-lava-landing-page
                                     Đã tải lên ảnh của "{{name}}"
                                 </div>
                                 {% endif%}
-                                <input class="btn btn-warning main-button-slider" type="submit" value="Gửi lên"/>
+                                <input class="btn btn-warning main-button-slider" type="submit" value="Gửi lên" />
                             </form>
                         </div>
                     </div>
@@ -89,6 +89,11 @@ https://templatemo.com/tm-540-lava-landing-page
         </div>
         <!-- ***** Welcome Area End ***** -->
 
+        <!-- ***** Header Area Start ***** -->
+        {%block footer%}
+        {%include 'header_footer/footer.html' %}
+        {%endblock%}
+        <!-- ***** Header Area End ***** -->
         <!-- jQuery -->
         <script src="./static/assets/js/jquery-2.1.0.min.js"></script>
 
