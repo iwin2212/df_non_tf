@@ -22,6 +22,7 @@ def index():
 def get_results():
     return get_result()
 
+
 @app.route('/predict_snapshots', methods=['POST'])
 def predict_snapshots():
     payload = request.get_json()
@@ -31,6 +32,7 @@ def predict_snapshots():
     else:
         print("File is not found")
         return "File is not found"
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=2212, debug=True)
