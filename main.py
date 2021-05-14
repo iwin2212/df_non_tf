@@ -18,7 +18,7 @@ def index():
     return render_template("/index.html")
 
 
-@app.route('/get_results', methods=['POST'])
+@app.route('/get_results', methods=['GET', 'POST'])
 def get_results():
     return get_result()
 
