@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 from view import upload, take_shot, live_demo
-from utils import destroy_camera, get_result, predict_snapshot, check_file_exist
+from utils import destroy_camera, get_result, predict_snapshot, check_file_exist, check_running_condition
 import os
 from const import img_path
 
@@ -14,6 +14,7 @@ app.register_blueprint(live_demo.mod)
 
 @app.route('/')
 def index():
+    check_running_condition()
     destroy_camera()
     return render_template("/index.html")
 

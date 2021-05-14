@@ -1,6 +1,8 @@
 from pathlib import Path
 import io
-from const import snap_path, ROOT_DIR, video_source, img_path, result_path, w_min
+
+from PIL.Image import new
+from const import snap_path,restart_api, ROOT_DIR, video_source, img_path, result_path, w_min
 import os
 from view.utils.data import add_img2db
 import yaml
@@ -10,11 +12,13 @@ from custom_deepface.deepface.commons import distance as dst
 import pandas as pd
 from view.utils.data import get_face_pixels
 from view.utils.lite_predict import predict_tfmodel
-from const import input_shape, embedding_path, distance_metric, input_shape_size
+from const import input_shape,snapshot_api, embedding_path, distance_metric, input_shape_size
 import numpy as np
+import subprocess
 import json
 from custom_deepface.deepface.commons import functions
-
+import requests
+from const import configration_path
 
 def get_new_brand():
     return os.path.join(snap_path, str(int(time.time())) + '.jpg')
@@ -276,3 +280,90 @@ def load_database():
     face_detector_path = opencv_path+"haarcascade_frontalface_default.xml"
     face_cascade = cv2.CascadeClassifier(face_detector_path)
     return df, face_cascade
+
+
+def check_configration():
+    data = open(configration_path, "r").read()
+    if (data.find("/config/tmp/camera") != -1):
+        print("-> File {} is ready to use.".format(configration_path[configration_path.rfind('/')+1:]))
+    else:
+        print("Error: File {} is missing '/config/tmp/camera' in 'whitelist_external_dirs'".format(configration_path[configration_path.rfind('/')+1:]))
+
+
+def check_running_condition():
+    try:
+        print("Checking condition:")
+
+        print("- Task: Checking configration.yaml...")
+        check_configration()
+
+        print("- Task: Checking rest_command.yaml exist...")
+        create_rest_api('predict_snapshot')
+
+
+    except Exception as error:
+        print("*** Error: {} ***".format(error))
+
+
+def create_rest_api(service_name, filename="rest_command.yaml"):
+    try:
+        command_file_path = os.path.join(ROOT_DIR, filename)
+
+        if not check_file_exist(command_file_path):
+            print("File is not found. Create {} in homeassistant.".format(filename))
+            data = {
+                service_name: {
+                    "url": snapshot_api,
+                    "method": "POST",
+                    "payload": {"title": "{{ title }}", "message": "{{ message }}"},
+                    "content_type": "application/json; charset=utf-8"
+                }
+            }
+            dict2yaml(data, command_file_path)
+            print(" *** We need to restart home assistant to take effect ***")
+            try:
+                restart_ha()
+                print("Next step, you will persistently wait while restarting HA service.")
+            except Exception as error:
+                print("Error: {}".format(error))
+
+        if check_file_exist(command_file_path):
+            print("File {} existed.".format(filename))
+            db = yaml2dict(command_file_path)
+            new_db = {i:db[i] for i in db if (i!="predict_snapshot")}
+            data_form = '{"title": "{{ title }}", "message": "{{ message }}"}'
+            data = {
+                service_name: {
+                    "url": snapshot_api,
+                    "method": "POST",
+                    "payload": data_form,
+                    "content_type": "application/json; charset=utf-8"
+                }
+            }
+            new_db.update(data)
+            dict2yaml(new_db, command_file_path)
+            print("-> File {} is ready to use.".format(filename))
+            return {"result": True, "route": command_file_path}
+    except Exception as error:
+        return {"result": False, "reason": error, "whereis": "create_rest_api"}
+
+
+def restart_ha():
+    try:
+        subprocess.call(['sv', 'down', 'hass'])
+        subprocess.call(['pkill', 'hass'])
+        subprocess.call(['sv', 'up', 'hass'])
+
+        result = "Đã restart server"
+    except:
+        headers = {
+            "Authorization": "Bearer " + get_token(),
+            "content-type": "application/json"
+        }
+
+        res = requests.post(restart_api, headers=headers)
+
+        result = ''
+        if res.status_code == 200:
+            result = "Đang khởi động lại dịch vụ Javis HC. Xin vui lòng chờ trong giây lát."
+    return result
