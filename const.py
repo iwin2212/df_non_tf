@@ -34,3 +34,5 @@ result_path = "./static/result/result.json"
 img_path = "/usr/share/hassio/homeassistant/tmp/camera"
 
 input_shape_size = 300
+
+number_of_snapshots = 3

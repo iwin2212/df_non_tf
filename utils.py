@@ -4,7 +4,7 @@ import io
 from PIL.Image import new
 from const import snap_path, restart_api, ROOT_DIR, video_source, img_path, result_path, w_min
 import os
-from view.utils.data import add_img2db
+from view.utils.data import add_img2db, detect_face
 import yaml
 import time
 import cv2
@@ -12,7 +12,7 @@ from custom_deepface.deepface.commons import distance as dst
 import pandas as pd
 from view.utils.data import get_face_pixels
 from view.utils.lite_predict import predict_tfmodel
-from const import input_shape, snapshot_api, embedding_path, distance_metric, input_shape_size
+from const import input_shape, snapshot_api, embedding_path, distance_metric, input_shape_size, number_of_snapshots
 import numpy as np
 import subprocess
 import json
@@ -99,66 +99,33 @@ def predict_snapshot(img_path=img_path):
     pTime = time.time()
     # case 1: snapshot from home assistant
     if ("/usr/share" in img_path):
-        # list_img_path = get_list_img_path(img_path)
-        list_img_path = img_path
-        print(time.time())
         df, face_cascade = load_database()
-        print(time.time(), "load database")
-        identity = predict_img_ha(list_img_path, df, face_cascade)
-    # case 2: snapshot from service via apis
-    else:  # have not done yet############
-        df, face_cascade = load_database()
+        identity = predict_img_ha(img_path, df, face_cascade)
 
-        identity = predict_img_local(img_path, df)
+    # case 2: snapshot from service via api
+    else:
+        df, face_cascade = load_database()
+        identity = predict_img_service(img_path, df, face_cascade)
 
     duration = time.time() - pTime
     data = {"identity": identity, "duration": duration}
     data2json(data, result_path)
-    return data
+
+    list_img_path = get_list_img_path('./static/snap_shots')
+    for i in list_img_path:
+        os.remove(i)
+    return data, duration
 
 
-def predict_img_local(img_path, df):
+def predict_img_service(list_img_path, df, face_cascade):
     list_identity = []
-    for img in img_path:
-        list_candidate = []
-
-        face_pixels = get_face_pixels(img)
-        time.sleep(0.05)
-        if face_pixels.shape[1:3] == input_shape:
-            if df.shape[0] > 0:
-                img1_representation = predict_tfmodel(face_pixels)[
-                    0, :]
-
-                def findDistance(row):
-                    img2_representation = row['embedding']
-                    distance = dst.findCosineDistance(
-                        img1_representation, img2_representation)
-                    return distance
-
-                df['distance'] = df.apply(findDistance, axis=1)
-                df = df.sort_values(by=["distance"])
-                time.sleep(0.05)
-
-                list_candidate = []
-                for i in range(3):
-                    candidate = df.iloc[i]
-                    candidate_label = candidate['employee']
-                    if (candidate_label in list_candidate):
-                        break
-                    else:
-                        list_candidate.append(candidate_label)
-                        candidate_label = 'unknown'
-                time.sleep(0.05)
-        list_identity.append(candidate_label)
-    return max(list_identity, key=list_identity.count)
-
-
-def predict_img_ha(list_img_path, df, face_cascade):
     candidate_label = 'unknown'
-    if (str(type(list_img_path)) == "<class 'str'>"):
-        img = cv2.imread(list_img_path)
+    for img in list_img_path:
+        # print(time.time())
+        img = cv2.imread(img)
         while(img.shape[0] > input_shape_size):
-            img = cv2.resize(img, (int(img.shape[1]/2), int(img.shape[0]/2)))
+            img = cv2.resize(
+                img, (int(img.shape[1]/2), int(img.shape[0]/2)))
         faces = face_cascade.detectMultiScale(img,  1.3, 5)
         for (x, y, w, h) in faces:
             if w > w_min:  # discard small detected faces
@@ -199,6 +166,8 @@ def predict_img_ha(list_img_path, df, face_cascade):
                         # print(time.time(), "sort")
                         # print(df)
                         # print('--------------------')
+
+                        candidate_label = 'unknown'
                         list_candidates = df.iloc[0:3]['employee'].tolist()
                         if list_candidates.count(list_candidates[0]) >= 2:
                             candidate_label = list_candidates[0]
@@ -206,69 +175,58 @@ def predict_img_ha(list_img_path, df, face_cascade):
                             candidate_label = list_candidates[1]
                         else:
                             candidate_label = 'unknown'
-        result = candidate_label
-    else:
-        list_identity = []
-        for img in list_img_path[:3]:
-            print(time.time())
-            img = cv2.imread(img)
-            print(img.shape)
-            while(img.shape[0] > input_shape_size):
-                img = cv2.resize(
-                    img, (int(img.shape[1]/2), int(img.shape[0]/2)))
-            faces = face_cascade.detectMultiScale(img,  1.3, 5)
-            for (x, y, w, h) in faces:
-                if w > w_min:  # discard small detected faces
-                    # -------------------------------
-                    # apply deep learning for custom_face
-                    base_img = img.copy()
-                    img, region = functions.detect_face(
-                        img=img, enforce_detection=False)
-                    # --------------------------
+                        # print(time.time(), "get 1 in 3")
+        list_identity.append(candidate_label)
+    return max(list_identity, key=list_identity.count)
 
-                    if img.shape[0] > 0 and img.shape[1] > 0:
-                        img = functions.align_face(img=img)
+
+def predict_img_ha(list_img_path, df, face_cascade):
+    candidate_label = 'unknown'
+    img = cv2.imread(list_img_path)
+    while(img.shape[0] > input_shape_size):
+        img = cv2.resize(img, (int(img.shape[1]/2), int(img.shape[0]/2)))
+    faces = face_cascade.detectMultiScale(img,  1.3, 5)
+    for (x, y, w, h) in faces:
+        if w > w_min:  # discard small detected faces
+            # -------------------------------
+            # apply deep learning for custom_face
+            base_img = img.copy()
+            img, region = functions.detect_face(
+                img=img, enforce_detection=False)
+            # --------------------------
+
+            if img.shape[0] > 0 and img.shape[1] > 0:
+                img = functions.align_face(img=img)
+            else:
+                img = base_img.copy()
+            # --------------------------
+            # post-processing
+            img = cv2.resize(img, input_shape)
+            img_pixels = np.array(img, dtype=np.float32)
+            face_pixels = np.expand_dims(img_pixels, axis=0)
+            face_pixels /= 255  # normalize input in [0, 1]
+
+            # check preprocess_face function handled
+            if face_pixels.shape[1:3] == input_shape:
+                if df.shape[0] > 0:
+                    img1_representation = predict_tfmodel(face_pixels)[
+                        0, :]
+
+                    def findDistance(row):
+                        img2_representation = row['embedding']
+                        distance = dst.findCosineDistance(
+                            img1_representation, img2_representation)
+                        return distance
+                    df['distance'] = df.apply(findDistance, axis=1)
+                    df = df.sort_values(by=["distance"])
+                    list_candidates = df.iloc[0:3]['employee'].tolist()
+                    if list_candidates.count(list_candidates[0]) >= 2:
+                        candidate_label = list_candidates[0]
+                    elif list_candidates.count(list_candidates[1]) >= 2:
+                        candidate_label = list_candidates[1]
                     else:
-                        img = base_img.copy()
-                    # --------------------------
-                    # post-processing
-                    img = cv2.resize(img, input_shape)
-                    img_pixels = np.array(img, dtype=np.float32)
-                    face_pixels = np.expand_dims(img_pixels, axis=0)
-                    face_pixels /= 255  # normalize input in [0, 1]
-
-                    print(time.time(), "face_pixels")
-
-                    # check preprocess_face function handled
-                    if face_pixels.shape[1:3] == input_shape:
-                        if df.shape[0] > 0:
-                            img1_representation = predict_tfmodel(face_pixels)[
-                                0, :]
-
-                            def findDistance(row):
-                                img2_representation = row['embedding']
-                                distance = dst.findCosineDistance(
-                                    img1_representation, img2_representation)
-                                return distance
-                            df['distance'] = df.apply(findDistance, axis=1)
-                            print(time.time(), "predict")
-                            df = df.sort_values(by=["distance"])
-                            print(time.time(), "sort")
-                            print(df)
-                            print('--------------------')
-
-                            candidate_label = 'unknown'
-                            list_candidates = df.iloc[0:3]['employee'].tolist()
-                            if list_candidates.count(list_candidates[0]) >= 2:
-                                candidate_label = list_candidates[0]
-                            elif list_candidates.count(list_candidates[1]) >= 2:
-                                candidate_label = list_candidates[1]
-                            else:
-                                candidate_label = 'unknown'
-                            print(time.time(), "get 1 in 3")
-            list_identity.append(candidate_label)
-        result = max(list_identity, key=list_identity.count)
-    return result
+                        candidate_label = 'unknown'
+    return candidate_label
 
 
 def get_result():
@@ -316,7 +274,8 @@ def create_rest_api(service_name, filename="rest_command.yaml"):
         command_file_path = os.path.join(ROOT_DIR, filename)
 
         if not check_file_exist(command_file_path):
-            logging.warning("File is not found. Create {} in homeassistant.".format(filename))
+            logging.warning(
+                "File is not found. Create {} in homeassistant.".format(filename))
             data = {
                 service_name: {
                     "url": snapshot_api,
@@ -326,10 +285,12 @@ def create_rest_api(service_name, filename="rest_command.yaml"):
                 }
             }
             dict2yaml(data, command_file_path)
-            logging.warning(" *** We need to restart home assistant to take effect ***")
+            logging.warning(
+                " *** We need to restart home assistant to take effect ***")
             try:
                 restart_ha()
-                logging.warning("Next step, you will persistently wait while restarting HA service.")
+                logging.warning(
+                    "Next step, you will persistently wait while restarting HA service.")
             except Exception as error:
                 logging.warning("Error: {}".format(error))
 
@@ -373,3 +334,22 @@ def restart_ha():
         if res.status_code == 200:
             result = "Đang khởi động lại dịch vụ Javis HC. Xin vui lòng chờ trong giây lát."
     return result
+
+
+def predict_service_snapshots():
+    link_list = []
+    while(len(link_list) < number_of_snapshots):
+        img = Camera().get_frame()
+        image = np.asarray(bytearray(img), dtype="uint8")
+        try:
+            image = detect_face(cv2.imdecode(image, cv2.IMREAD_COLOR))
+            new_shot = get_new_brand()
+            cv2.imwrite(new_shot, image)
+            if (new_shot not in link_list):
+                link_list.append(new_shot)
+            else:
+                continue
+        except Exception as error:
+            logging.warning("Error: {}".format(error))
+            continue
+    return predict_snapshot(link_list)

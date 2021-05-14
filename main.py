@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 from view import upload, take_shot, live_demo
-from utils import get_result, predict_snapshot, check_file_exist, check_running_condition
+from utils import get_result, predict_snapshot, check_file_exist, check_running_condition, predict_service_snapshots
 import os
 from const import img_path
 import logging
@@ -25,12 +25,15 @@ def get_results():
 @app.route('/predict_snapshots', methods=['POST'])
 def predict_snapshots():
     payload = request.get_json()
-    img = os.path.join(img_path, payload['title'])
-    if check_file_exist(img):
-        return predict_snapshot(img)
+    if (payload['message'] == 'service_snapshot'):
+        return predict_service_snapshots()
     else:
-        logging.warning("File is not found")
-        return "File is not found"
+        img = os.path.join(img_path, payload['title'])
+        if check_file_exist(img):
+            return predict_snapshot(img)
+        else:
+            logging.warning("File is not found")
+            return "File is not found"
 
 
 if __name__ == "__main__":
