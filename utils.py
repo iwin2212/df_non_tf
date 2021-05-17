@@ -2,7 +2,7 @@ from pathlib import Path
 import io
 
 from PIL.Image import new
-from const import snap_path, restart_api, ROOT_DIR, video_source, img_path, result_path, w_min
+from const import snap_path, restart_api, ROOT_DIR, video_source, img_path, result_path, w_min, threshold
 import os
 from view.utils.data import add_img2db, detect_face
 import yaml
@@ -18,7 +18,8 @@ import subprocess
 import json
 from custom_deepface.deepface.commons import functions
 import requests
-from const import configration_path
+from const import configration_path, ip_addr
+from websocket import create_connection
 from importlib import import_module
 if os.environ.get('CAMERA'):
     Camera = import_module('camera_' + os.environ['CAMERA']).Camera
@@ -167,14 +168,17 @@ def predict_img_service(list_img_path, df, face_cascade):
                         # print(df)
                         # print('--------------------')
 
-                        candidate_label = 'unknown'
+                        list_distance = df.iloc[0:3]['distance'].tolist()
                         list_candidates = df.iloc[0:3]['employee'].tolist()
-                        if list_candidates.count(list_candidates[0]) >= 2:
-                            candidate_label = list_candidates[0]
-                        elif list_candidates.count(list_candidates[1]) >= 2:
-                            candidate_label = list_candidates[1]
-                        else:
+                        if list_distance[0] > threshold:
                             candidate_label = 'unknown'
+                        else:
+                            if (list_candidates.count(list_candidates[0]) >= 2):
+                                candidate_label = list_candidates[0]
+                            elif (list_distance[1] < threshold and list_candidates.count(list_candidates[1]) >= 2):
+                                candidate_label = list_candidates[1]
+                            else:
+                                candidate_label = 'unknown'
                         # print(time.time(), "get 1 in 3")
         list_identity.append(candidate_label)
     return max(list_identity, key=list_identity.count)
@@ -199,6 +203,8 @@ def predict_img_ha(list_img_path, df, face_cascade):
                 img = functions.align_face(img=img)
             else:
                 img = base_img.copy()
+            # 3333333333333333333333333333333333
+            cv2.imwrite(list_img_path, img)
             # --------------------------
             # post-processing
             img = cv2.resize(img, input_shape)
@@ -219,13 +225,18 @@ def predict_img_ha(list_img_path, df, face_cascade):
                         return distance
                     df['distance'] = df.apply(findDistance, axis=1)
                     df = df.sort_values(by=["distance"])
+
+                    list_distance = df.iloc[0:3]['distance'].tolist()
                     list_candidates = df.iloc[0:3]['employee'].tolist()
-                    if list_candidates.count(list_candidates[0]) >= 2:
-                        candidate_label = list_candidates[0]
-                    elif list_candidates.count(list_candidates[1]) >= 2:
-                        candidate_label = list_candidates[1]
-                    else:
+                    if list_distance[0] > threshold:
                         candidate_label = 'unknown'
+                    else:
+                        if (list_candidates.count(list_candidates[0]) >= 2):
+                            candidate_label = list_candidates[0]
+                        elif (list_distance[1] < threshold and list_candidates.count(list_candidates[1]) >= 2):
+                            candidate_label = list_candidates[1]
+                        else:
+                            candidate_label = 'unknown'
     return candidate_label
 
 
@@ -353,3 +364,38 @@ def predict_service_snapshots():
             logging.warning("Error: {}".format(error))
             continue
     return predict_snapshot(link_list)
+
+
+def read_result(entity_id, message = "{% if states('sensor.check_person') != 'unknown' %}Chào mừng {{ states('sensor.check_person') }} đã trở về nhà. Nhiệt độ trong phòng đang là 30 độ. Điều hoà đã được bật 26 độ mát. Xin hãy nghỉ ngơi và thư giãn.{% else %} Không nhận dạng được khuôn mặt. Xin hãy thử lại.{% endif %}"):
+    headers = {
+        "Authorization": "Bearer " + get_token(),
+        'Content-Type': 'application/json'
+    }
+    url_flow = 'http://'+ip_addr+'/api/services/tts/google_translate_say'
+    payload = {
+        "entity_id": entity_id,
+        "message": message,
+        "language": "vi"
+    }
+    res = requests.post(url_flow, data=json.dumps(payload), headers=headers)
+    if res.status_code == 200:
+        return {"result": "done"}
+    else:
+        return {"result": res.status_code}
+
+
+def get_tts_devices():
+    headers = {
+        "Authorization": "Bearer " + get_token(),
+        'Content-Type': 'application/json'
+    }
+    payload = ""
+    url_flow = 'http://'+ip_addr+'/api/states'
+    res = requests.request("GET", url_flow, headers=headers, data=payload)
+    data = res.json()
+    tts_devices = [dev['entity_id'] for dev in data if ("media_player" in dev['entity_id'])]
+
+    if (len(tts_devices) == 1):
+        read_result(tts_devices[0])
+    logging.warning(tts_devices)
+

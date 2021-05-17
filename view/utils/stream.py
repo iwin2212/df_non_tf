@@ -1,4 +1,4 @@
-from const import input_shape_x, input_shape_y, input_shape, text_color, w_min, w_min
+from const import input_shape_x, input_shape_y, input_shape, text_color, w_min, w_min, threshold
 from view.utils.lite_predict import predict_tfmodel
 from custom_deepface.deepface.commons import functions, distance as dst
 import cv2
@@ -31,16 +31,20 @@ def preprocess(img, face_cascade, df):
 
                     df['distance'] = df.apply(findDistance, axis=1)
                     df = df.sort_values(by=["distance"])
-                    # print(df)
+                    print(df)
+                    list_distance = df.iloc[0:3]['distance'].tolist()
                     list_candidates = df.iloc[0:3]['employee'].tolist()
-                    if list_candidates.count(list_candidates[0]) >= 2:
-                        candidate_label = list_candidates[0]
-                    elif list_candidates.count(list_candidates[1]) >= 2:
-                        candidate_label = list_candidates[1]
-                    else:
+                    if (list_distance[0] > threshold):
                         candidate_label = 'unknown'
-                    # print(
-                    #     "\n-------------> {} - {}\n".format(candidate_label, threshold))
+                    else:
+                        if (list_candidates.count(list_candidates[0]) >= 2):
+                            candidate_label = list_candidates[0]
+                        elif (list_distance[1] < threshold and list_candidates.count(list_candidates[1]) >= 2):
+                            candidate_label = list_candidates[1]
+                        else:
+                            candidate_label = 'unknown'
+                    print(
+                        "\n-------------> {} - {}\n".format(candidate_label, threshold))
                     # show name
                     cv2.putText(
                         img, candidate_label, (x+int(w/2), y+h + 13), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
