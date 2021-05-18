@@ -1,6 +1,5 @@
 from tflite_runtime.interpreter import Interpreter
 from const import model_path, input_shape_x, input_shape_y
-import time
 
 # Load the TFLite model
 interpreter = Interpreter(model_path)

@@ -31,10 +31,10 @@ def preprocess(img, face_cascade, df):
 
                     df['distance'] = df.apply(findDistance, axis=1)
                     df = df.sort_values(by=["distance"])
-                    print(df)
+                    
                     list_distance = df.iloc[0:3]['distance'].tolist()
                     list_candidates = df.iloc[0:3]['employee'].tolist()
-                    if (list_distance[0] > threshold):
+                    if list_distance[0] > threshold:
                         candidate_label = 'unknown'
                     else:
                         if (list_candidates.count(list_candidates[0]) >= 2):
@@ -43,8 +43,7 @@ def preprocess(img, face_cascade, df):
                             candidate_label = list_candidates[1]
                         else:
                             candidate_label = 'unknown'
-                    print(
-                        "\n-------------> {} - {}\n".format(candidate_label, threshold))
+                    # print("\n-------------> {} - {}\n".format(candidate_label, threshold))
                     # show name
                     cv2.putText(
                         img, candidate_label, (x+int(w/2), y+h + 13), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)

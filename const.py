@@ -15,6 +15,7 @@ UPLOAD_FOLDER = os.path.join(os.path.dirname(
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 # input_shape = input_shape_x, input_shape_y = 224, 224
 input_shape = input_shape_x, input_shape_y = 160, 160
+# input_shape = input_shape_x, input_shape_y = 112, 112
 w_min = 100
 
 text_color = (255, 255, 255)
