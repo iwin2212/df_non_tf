@@ -1,6 +1,5 @@
 opencv-python
 pandas
-gdown
 Pillow
 flask
 pyyaml

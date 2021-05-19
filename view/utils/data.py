@@ -1,5 +1,5 @@
 import numpy as np
-from custom_deepface.deepface.commons import functions, distance as dst
+from custom_deepface.deepface.commons import functions
 from view.utils.lite_predict import predict_tfmodel
 import cv2
 import os
@@ -12,7 +12,7 @@ def detect_face(img_path, enforce_detection=True, detector_backend='opencv'):
     return cut_img
 
 
-def represent(img_path, enforce_detection=True, detector_backend='opencv', grayscale=False):
+def represent(img_path, grayscale=False):
     img = functions.load_image(img_path)
     # post-processing
     if grayscale == True:
