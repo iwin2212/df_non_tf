@@ -3,7 +3,10 @@ from custom_deepface.deepface.commons import distance as dst
 
 model_path = "model/facenet.tflite"
 # model_path = "model/arcface.tflite"
-embedding_path = "database/embed.npy"
+embedding_path = "database/embeddings.npy"
+# embedding_path = "database/test.npy"
+# embedding_path = "database/gray_scale.npy"
+
 
 # video_source = "rtsp://admin:javis2021@192.168.1.109:554"
 # video_source = "rtsp://admin:ECSIAQ@192.168.1.47:554"
