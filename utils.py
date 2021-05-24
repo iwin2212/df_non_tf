@@ -124,62 +124,45 @@ def predict_img_service(list_img_path, df, face_cascade):
     for img in list_img_path:
         # print(time.time())
         img = cv2.imread(img)
-        while(img.shape[0] > input_shape_size):
-            img = cv2.resize(
-                img, (int(img.shape[1]/2), int(img.shape[0]/2)))
-        faces = face_cascade.detectMultiScale(img,  1.3, 5)
-        for (x, y, w, h) in faces:
-            if w > w_min:  # discard small detected faces
-                # -------------------------------
-                # apply deep learning for custom_face
-                base_img = img.copy()
-                img, region = functions.detect_face(
-                    img=img, enforce_detection=False)
-                # --------------------------
+        # --------------------------
+        # post-processing
+        img = cv2.resize(img, input_shape)
+        img_pixels = np.array(img, dtype=np.float32)
+        face_pixels = np.expand_dims(img_pixels, axis=0)
+        face_pixels /= 255  # normalize input in [0, 1]
 
-                if img.shape[0] > 0 and img.shape[1] > 0:
-                    img = functions.align_face(img=img)
+        # print(time.time(), "face_pixels")
+
+        # check preprocess_face function handled
+        if face_pixels.shape[1:3] == input_shape:
+            if df.shape[0] > 0:
+                img1_representation = predict_tfmodel(face_pixels)[
+                    0, :]
+
+                def findDistance(row):
+                    img2_representation = row['embedding']
+                    distance = dst.findCosineDistance(
+                        img1_representation, img2_representation)
+                    return distance
+                df['distance'] = df.apply(findDistance, axis=1)
+                # print(time.time(), "predict")
+                df = df.sort_values(by=["distance"])
+                # print(time.time(), "sort")
+                # print(df)
+                # print('--------------------')
+
+                list_distance = df.iloc[0:3]['distance'].tolist()
+                list_candidates = df.iloc[0:3]['employee'].tolist()
+                if list_distance[0] > threshold:
+                    candidate_label = 'unknown'
                 else:
-                    img = base_img.copy()
-                # --------------------------
-                # post-processing
-                img = cv2.resize(img, input_shape)
-                img_pixels = np.array(img, dtype=np.float32)
-                face_pixels = np.expand_dims(img_pixels, axis=0)
-                face_pixels /= 255  # normalize input in [0, 1]
-
-                # print(time.time(), "face_pixels")
-
-                # check preprocess_face function handled
-                if face_pixels.shape[1:3] == input_shape:
-                    if df.shape[0] > 0:
-                        img1_representation = predict_tfmodel(face_pixels)[
-                            0, :]
-
-                        def findDistance(row):
-                            img2_representation = row['embedding']
-                            distance = dst.findCosineDistance(
-                                img1_representation, img2_representation)
-                            return distance
-                        df['distance'] = df.apply(findDistance, axis=1)
-                        # print(time.time(), "predict")
-                        df = df.sort_values(by=["distance"])
-                        # print(time.time(), "sort")
-                        # print(df)
-                        # print('--------------------')
-
-                        list_distance = df.iloc[0:3]['distance'].tolist()
-                        list_candidates = df.iloc[0:3]['employee'].tolist()
-                        if list_distance[0] > threshold:
-                            candidate_label = 'unknown'
-                        else:
-                            if (list_candidates.count(list_candidates[0]) >= 2):
-                                candidate_label = list_candidates[0]
-                            elif (list_distance[1] < threshold and list_candidates.count(list_candidates[1]) >= 2):
-                                candidate_label = list_candidates[1]
-                            else:
-                                candidate_label = 'unknown'
-                        # print(time.time(), "get 1 in 3")
+                    if (list_candidates.count(list_candidates[0]) >= 2):
+                        candidate_label = list_candidates[0]
+                    elif (list_distance[1] < threshold and list_candidates.count(list_candidates[1]) >= 2):
+                        candidate_label = list_candidates[1]
+                    else:
+                        candidate_label = 'unknown'
+                # print(time.time(), "get 1 in 3")
         list_identity.append(candidate_label)
     return max(list_identity, key=list_identity.count)
 

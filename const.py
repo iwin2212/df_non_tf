@@ -32,6 +32,7 @@ ROOT_DIR = "/usr/share/hassio/homeassistant/"
 configration_path = "/usr/share/hassio/homeassistant/configuration.yaml"
 
 ip_addr  = "127.0.0.1:8123"
+# ip_addr  = "192.168.0.110:8123"
 
 states_api = "http://"+ ip_addr +"/api/states/{}"
 config_api = "http://"+ ip_addr +"/api/config/core/check_config"
