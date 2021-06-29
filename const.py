@@ -28,8 +28,10 @@ model_name = 'Facenet'
 
 token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIxZGQwYjNlNWE2ZTc0ZTY5YTM5NzdlZDAxMWE2Mjk5OCIsImlhdCI6MTU5NTE4MDYyOCwiZXhwIjoxOTEwNTQwNjI4fQ.9IytiXHV98pS4x5nxhH7z1QAq91ZXzBQaeJsZ8U2ZAQ"
 
-ROOT_DIR = "/usr/share/hassio/homeassistant/"
-configration_path = "/usr/share/hassio/homeassistant/configuration.yaml"
+# ROOT_DIR = "/usr/share/hassio/homeassistant/"
+ROOT_DIR = "C:/Users/bacht/AppData/Roaming/.homeassistant/"
+# configration_path = "/usr/share/hassio/homeassistant/configuration.yaml"
+configration_path = "C:/Users/bacht/AppData/Roaming/.homeassistant//configuration.yaml"
 
 ip_addr  = "127.0.0.1:8123"
 # ip_addr  = "192.168.0.110:8123"
